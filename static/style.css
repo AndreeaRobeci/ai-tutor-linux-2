@@ -1,0 +1,68 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background: #0b1220;
+  color: #e7eefc;
+}
+
+.wrap {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+header h1 { margin: 0 0 8px; font-size: 32px; }
+.sub { margin: 0 0 24px; color: #b8c4e6; }
+
+.card {
+  background: #101a33;
+  border: 1px solid #1c2a55;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
+.row { display: grid; gap: 8px; margin-bottom: 12px; }
+label { font-size: 14px; color: #b8c4e6; }
+
+select, textarea, button {
+  border-radius: 10px;
+  border: 1px solid #233466;
+  background: #0e1730;
+  color: #e7eefc;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+textarea { resize: vertical; min-height: 110px; }
+
+.actions { display: flex; gap: 10px; }
+button {
+  cursor: pointer;
+  background: #2b5cff;
+  border-color: #2b5cff;
+  font-weight: 600;
+}
+button.secondary {
+  background: transparent;
+  border-color: #2a3b73;
+}
+
+.out {
+  margin: 0;
+  white-space: pre-wrap;
+  background: #0e1730;
+  border: 1px solid #233466;
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 80px;
+}
+
+.status { margin-top: 10px; font-size: 13px; color: #b8c4e6; }
+.status.ok { color: #8ff0b5; }
+.status.error { color: #ff8a8a; }
+.status.loading { color: #ffe08a; }
+
+footer { margin-top: 10px; color: #9fb0dc; }

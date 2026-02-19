@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Tutor for Linux</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>AI Tutor for Linux</h1>
+      <p class="sub">Scrie o cerință sau o comandă. Alege modul și apasă Trimite.</p>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <label>Mod</label>
+        <select id="mode">
+          <option value="translate">Translate: cerință → comandă</option>
+          <option value="explain">Explain: explică o comandă</option>
+          <option value="exercise">Exercise: generează exercițiu</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label id="inputLabel">Input</label>
+        <textarea id="text" rows="5" placeholder="Ex: Vreau să văd toate fișierele .txt din directorul curent"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="send">Trimite</button>
+        <button id="clear" class="secondary">Curăță</button>
+      </div>
+
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <label>Răspuns</label>
+        <pre id="out" class="out">—</pre>
+      </div>
+      <div class="actions">
+        <button id="copy" class="secondary">Copiază</button>
+      </div>
+    </section>
+
+    
+  </div>
+
+  <script>
+    const modeEl = document.getElementById('mode');
+    const textEl = document.getElementById('text');
+    const outEl = document.getElementById('out');
+    const statusEl = document.getElementById('status');
+    const inputLabelEl = document.getElementById('inputLabel');
+
+    function setStatus(msg, type='') {
+      statusEl.textContent = msg || '';
+      statusEl.className = 'status ' + type;
+    }
+
+    function updatePlaceholder() {
+      const mode = modeEl.value;
+      if (mode === 'translate') {
+        inputLabelEl.textContent = 'Cerință (natural language)';
+        textEl.placeholder = 'Ex: Vreau să văd toate fișierele .txt din directorul curent';
+      } else if (mode === 'explain') {
+        inputLabelEl.textContent = 'Comandă (Bash)';
+        textEl.placeholder = 'Ex: ls *.txt | wc -l';
+      } else {
+        inputLabelEl.textContent = 'Temă (opțional)';
+        textEl.placeholder = 'Ex: fișiere, permisiuni, grep, piping (sau lasă gol)';
+      }
+    }
+
+    modeEl.addEventListener('change', updatePlaceholder);
+    updatePlaceholder();
+
+    document.getElementById('send').addEventListener('click', async () => {
+      setStatus('Se generează...', 'loading');
+      outEl.textContent = '...';
+
+      try {
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ mode: modeEl.value, text: textEl.value })
+        });
+
+        const data = await res.json();
+        if (!data.ok) {
+          outEl.textContent = '—';
+          setStatus(data.error || 'Eroare.', 'error');
+          return;
+        }
+
+        outEl.textContent = data.result || '—';
+        setStatus('Gata ✅', 'ok');
+      } catch (e) {
+        outEl.textContent = '—';
+        setStatus('Eroare de rețea sau serverul nu rulează.', 'error');
+      }
+    });
+
+    document.getElementById('clear').addEventListener('click', () => {
+      textEl.value = '';
+      outEl.textContent = '—';
+      setStatus('');
+    });
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      const txt = outEl.textContent;
+      if (!txt || txt === '—') return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        setStatus('Copiat ✅', 'ok');
+      } catch {
+        setStatus('Nu am putut copia.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
