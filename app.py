@@ -1,13 +1,23 @@
 from flask import Flask, render_template, request, jsonify
 from gpt4all import GPT4All
+from pdf_loader import load_pdf_text
 import os
+import json
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+pdf_path = os.path.join(BASE_DIR, "data", "AI-tutor-linux resurse.pdf")
+json_path = os.path.join(BASE_DIR, "data", "exercices.json")
+
+
+PDF_CONTENT = load_pdf_text(pdf_path)
 
 print("1) APP.PY A PORNIT", flush=True)
 
 
 app = Flask(__name__)
 
-# Pune modelul aici: ai-tutor-linux/models/mistral-7b-instruct-v0.1.Q4_0.gguf
+
 MODEL_PATH = os.path.join("models", "mistral-7b-instruct-v0.1.Q4_0.gguf")
 
 model = None
@@ -36,44 +46,44 @@ def get_model():
         )
         return model
     except Exception as e:
-        model_error = f"Eroare la încărcarea modelului: {e}"
+        model_error = f"Eroare la incarcarea modelului: {e}"
         return None
 
 
 def build_prompt(mode: str, text: str) -> str:
-    text = text.strip()
+    context = f"""
+    Foloseste urmatoarea documentatie pentru raspunsuri:
+
+    {PDF_CONTENT[:4000]}
+    """
 
     if mode == "translate":
         return (
-            "Transformă cerința în limbaj natural într-o comandă Linux Bash.\n"
-            "Răspunde DOAR cu comanda, fără explicații, fără ghilimele.\n"
-            "Dacă sunt necesare mai multe comenzi, folosește operatori (&&, |, ;).\n\n"
-            f"Cerință: {text}\n"
-            "Comandă:"
+            context +
+            "\nTransforma cerinta in limbaj natural intr-o comanda Linux Bash.\n"
+            "Raspunde DOAR cu comanda.\n\n"
+            f"Cerinta: {text}\nComanda:"
         )
 
     if mode == "explain":
         return (
-            "Explică pas cu pas ce face comanda Linux de mai jos.\n"
-            "Folosește puncte scurte (1-6 pași). Fără text în plus.\n\n"
-            f"Comandă: {text}\n"
-            "Explicație:"
+            context +
+            "\nExplica pas cu pas comanda Linux.\n\n"
+            f"Comanda: {text}\nExplicatie:"
         )
 
-    # exercise
-    return (
-        "Generează un exercițiu scurt pentru Linux Bash (nivel: începător-med).\n"
-        "Apoi dă o soluție (comanda corectă).\n"
-        "Format obligatoriu:\n"
-        "Exercițiu: ...\n"
-        "Soluție: ...\n\n"
-        f"Temă/Preferință (opțional): {text}\n"
-    )
-
-
 @app.route("/")
+
+
 def index():
     return render_template("index.html")
+
+# -------------------------------
+
+#pagina exercitii
+@app.route("/exercitii")
+def exercitii_page():
+    return render_template("exercices.html")
 
 
 @app.route("/api/ask", methods=["POST"])
@@ -95,7 +105,7 @@ def ask():
     prompt = build_prompt(mode, text)
 
     try:
-        # temperature mic pentru răspunsuri stabile
+        # temperature mic pentru raspunsuri stabile
         output = m.generate(prompt, temp=0.2, max_tokens=256)
         return jsonify({"ok": True, "result": output.strip()})
     except Exception as e:
@@ -104,9 +114,26 @@ def ask():
 print("2) INAINTE DE MAIN CHECK", flush=True)
 
 
+@app.route("/api/exercises", methods=["GET"])
+def get_exercises():
+    try:
+        # Deschidem fisierul JSON și îl citim
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        # Îl trimitem ca răspuns valid către frontend
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": f"Nu am putut citi JSON-ul: {e}"}), 500
+
+
+
+
+
+
 if __name__ == "__main__":
     print("3) IN MAIN - PORNESC FLASK", flush=True)
     app.run(host="127.0.0.1", port=5000, debug=True, use_reloader=False)
+
 
 
 

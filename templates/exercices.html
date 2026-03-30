@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Tutor - Exerciții</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Harta Cursului Linux</h1>
+        
+        <a href="/" class="nav-button" style="margin-bottom: 20px; display: inline-block;">⬅ Înapoi la Chat</a>
+
+        <section class="card">
+            <div id="course-map">Se încarcă nivelurile...</div>
+        </section>
+    </div>
+
+    <script>
+        let allSteps = [];
+        let currentStepIndex = 0;
+
+        async function loadExercises() {
+            const mapContainer = document.getElementById("course-map");
+            try {
+                const res = await fetch("/api/exercises");
+                const data = await res.json();
+                
+                // Parcurgem datele și le așezăm într-o listă liniară
+                data.curs_linux.forEach(lume => {
+                    
+                    // Acest contor se resetează la 1 pentru fiecare lume nouă
+                    let numarExercitiuPeLume = 1;
+
+                    lume.skill_uri.forEach(skill => {
+                        skill.exercitii.forEach(ex => {
+                            allSteps.push({
+                                tip: 'exercitiu',
+                                lumeTitlu: `Lumea ${lume.id_lume}: ${lume.titlu}`,
+                                skillTitlu: skill.titlu,
+                                exNumber: numarExercitiuPeLume, // Numărătoare continuă
+                                cerinta: ex.cerinta
+                            });
+                            numarExercitiuPeLume++; 
+                        });
+                    });
+
+                    // Adăugăm Boss Level-ul la finalul lumii
+                    if (lume.boss_level && lume.boss_level.cerinta) {
+                        allSteps.push({
+                            tip: 'boss',
+                            lumeTitlu: `Lumea ${lume.id_lume}: ${lume.titlu}`,
+                            cerinta: lume.boss_level.cerinta,
+                            obiectiv: lume.boss_level.obiectiv_final
+                        });
+                    }
+                });
+
+                renderCurrentStep();
+
+            } catch (e) {
+                mapContainer.innerText = "Eroare la conectarea cu serverul.";
+                console.error(e);
+            }
+        }
+
+        function renderCurrentStep() {
+            const mapContainer = document.getElementById("course-map");
+
+            // Ecranul de finalizare curs
+            if (currentStepIndex >= allSteps.length) {
+                mapContainer.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h2 style="color: var(--accent-dark);">🎉 Felicitări!</h2>
+                        <p>Ai finalizat cu succes toate nivelurile din cursul de Linux!</p>
+                    </div>`;
+                return;
+            }
+
+            let step = allSteps[currentStepIndex];
+            
+            // Calculăm progresul general
+            let procente = Math.round(((currentStepIndex + 1) / allSteps.length) * 100);
+            
+            let html = `
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${procente}%;"></div>
+                </div>
+                <div class="progress-text">Pasul ${currentStepIndex + 1} din ${allSteps.length} (${procente}%)</div>
+            `;
+
+            if (step.tip === 'exercitiu') {
+                html += `
+                    <div class="nivel-header">
+                        <h3>${step.lumeTitlu}</h3>
+                        <p class="skill-subtitle">Skill: <strong>${step.skillTitlu}</strong></p>
+                    </div>
+                    
+                    <div class="exercitiu-activ">
+                        <strong class="ex-number">Exercițiul ${step.exNumber}:</strong>
+                        <p class="cerinta-text">${step.cerinta}</p>
+                        
+                        <div class="input-group">
+                            <input type="text" id="answer-input" placeholder="Scrie comanda Linux aici..." autocomplete="off">
+                        </div>
+                        
+                        <button class="btn-verifica" onclick="verificaSiContinua()">Verifică & Continuă ➔</button>
+                    </div>
+                `;
+            } else if (step.tip === 'boss') {
+                html += `
+                    <div class="nivel-header">
+                        <h3>${step.lumeTitlu}</h3>
+                    </div>
+                    
+                    <div class="exercitiu-activ boss-card">
+                        <h4 class="boss-title">👑 BOSS FINAL</h4>
+                        <p class="cerinta-text"><strong>Misiune:</strong> ${step.cerinta}</p>
+                        ${step.obiectiv ? `<p class="cerinta-text"><strong>Obiectiv:</strong> ${step.obiectiv}</p>` : ''}
+                        
+                        <div class="input-group">
+                            <textarea id="answer-input" rows="3" placeholder="Scrie secvența de comenzi aici..."></textarea>
+                        </div>
+                        
+                        <button class="btn-verifica boss-btn" onclick="verificaSiContinua()">Învinge Boss-ul ➔</button>
+                    </div>
+                `;
+            }
+
+            mapContainer.innerHTML = html;
+
+            // Punem focus automat pe input
+            document.getElementById("answer-input").focus();
+            
+            // Permitem tasta Enter
+            document.getElementById("answer-input").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    verificaSiContinua();
+                }
+            });
+        }
+
+        function verificaSiContinua() {
+            const inputVal = document.getElementById("answer-input").value.trim();
+            
+            if (inputVal === "") {
+                alert("Te rog să introduci un răspuns înainte de a continua!");
+                return;
+            }
+            
+            currentStepIndex++;
+            renderCurrentStep();
+        }
+
+        loadExercises();
+    </script>
+</body>
+</html>
