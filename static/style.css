@@ -1,187 +1,79 @@
-x/* ========================================= */
-/* GAMIFICATION - SISTEM DE PROGRESIE        */
-/* ========================================= */
-
-/* Cum arată un exercițiu blocat */
-.step-locked {
-    opacity: 0.3; /* Îl face șters / gri */
-    pointer-events: none; /* Nu poți da click pe el */
-    filter: grayscale(100%);
-    position: relative;
+/* Stiluri Generale */
+body {
+    background-color: #fdf2f4; /* Fundalul rozaliu pal */
+    font-family: 'Inter', sans-serif;
+    color: #111;
+    margin: 0;
+    padding: 0;
 }
 
-/* Cum arată o lume blocată */
-.world-locked {
-    opacity: 0.5;
-    pointer-events: none;
-    background-color: #333333 !important; /* Devine gri închis */
-    color: #666666 !important;
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
 }
 
-/* Butonul de verificare pentru fiecare exercițiu */
-.btn-verifica {
-    background-color: var(--bg-pink);
-    color: var(--accent-dark);
-    font-family: var(--font-body);
-    font-weight: 700;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    margin-top: 15px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    align-self: flex-start; /* Îl ține în stânga */
-    transition: all 0.2s ease;
+/* Cardul principal care conține lista */
+.card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.05);
 }
 
-.btn-verifica:hover {
-    background-color: var(--bg-white);
-}
-
-/* Cum arată butonul după ce ai trecut nivelul */
-.btn-verifica:disabled {
-    background-color: #4CAF50; /* Verde de succes */
+/* Butonul de navigare */
+.nav-button {
+    display: inline-block;
+    background-color: #8ba888;
     color: white;
-    cursor: default;
-    pointer-events: none;
-}
-
-/* ========================================= */
-/* BARĂ DE PROGRES                           */
-/* ========================================= */
-.progress-container {
-    width: 100%;
-    background-color: #e0e0e0;
-    border-radius: 10px;
-    height: 10px;
-    margin-bottom: 5px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: var(--accent-dark); 
-    width: 0%;
-    transition: width 0.4s ease-in-out;
-    border-radius: 10px;
-}
-
-.progress-text {
-    text-align: right;
-    font-size: 0.85rem;
-    color: #555;
-    margin-bottom: 30px;
-    font-weight: 600;
-}
-
-/* ========================================= */
-/* DESIGN PENTRU EXERCIȚII (SINGLE VIEW)     */
-/* ========================================= */
-.nivel-header {
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 50px;
     margin-bottom: 20px;
-}
-
-.nivel-header h3 {
-    color: var(--accent-dark);
-    margin-bottom: 5px;
-    font-size: 1.8rem;
-}
-
-.skill-subtitle {
-    color: #555555;
-    font-size: 1rem;
-    margin-top: 0;
-}
-
-.exercitiu-activ {
-    background-color: var(--accent-dark);
-    color: var(--bg-white);
-    padding: 30px;
-    border-radius: 15px;
-}
-
-.ex-number {
-    font-family: var(--font-titles);
-    color: var(--bg-pink);
-    font-size: 1.2rem;
-    display: block;
-    margin-bottom: 15px;
-}
-
-.cerinta-text {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    line-height: 1.6;
-}
-
-.input-group {
-    margin-bottom: 25px;
-}
-
-#answer-input {
-    width: 100%;
-    box-sizing: border-box;
-    background-color: #222;
-    border: 2px solid #444;
-    color: var(--bg-pink);
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 1.1rem;
-    padding: 15px;
-    border-radius: 10px;
-    outline: none;
-}
-
-#answer-input:focus {
-    background-color: #111;
-    border-color: var(--bg-pink);
-}
-
-.btn-verifica {
-    background-color: var(--bg-pink);
-    color: var(--accent-dark);
-    font-size: 1.1rem;
     font-weight: bold;
-    padding: 15px 30px;
-    width: 100%;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background 0.3s;
 }
 
-.btn-verifica:hover {
-    background-color: var(--bg-white);
+.nav-button:hover {
+    background-color: #6d8a6b;
 }
 
-/* Stil special pentru Boss */
-.boss-card {
-    background-color: #ffeb3b;
-    color: #000;
+/* Stiluri pentru Lume (Containerul mare) */
+.lume-card {
+    background: #f5cfd5; /* Rozul de fundal pentru lume */
+    padding: 30px;
+    margin-bottom: 30px;
+    border-radius: 20px;
 }
 
-.boss-title {
-    color: #000;
-    font-size: 1.8rem;
-    margin-bottom: 15px;
+.titlu-lume {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2rem;
     margin-top: 0;
-}
-
-.boss-card #answer-input {
-    background-color: #fffde7;
-    border-color: #000;
     color: #000;
 }
 
-.boss-card #answer-input:focus {
-    background-color: #fff;
+/* Skill-uri și Exerciții (Cardurile negre) */
+.skill-section {
+    margin-top: 20px;
 }
 
-.boss-btn {
-    background-color: #000;
-    color: #ffeb3b;
+.titlu-skill {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-.boss-btn:hover {
-    background-color: #333;
-    color: #fff;
+.exercitiu-item {
+    background-color: #1a1a2e; /* Negru/Bleumarin închis */
+    color: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+}
+
+.exercitiu-item strong {
+    color: #f5cfd5;
 }

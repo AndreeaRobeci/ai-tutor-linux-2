@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Tutor - Autentificare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .auth-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
+        .auth-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: border-color 0.3s; box-sizing: border-box; }
+        .auth-input:focus { border-color: #8ba888; }
+        .auth-btn { width: 100%; padding: 15px; background: #1a1a2e; color: white; border: none; border-radius: 12px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 1.1rem; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
+        .auth-btn:hover { background: #8ba888; }
+        .auth-switch { margin-top: 25px; font-size: 0.95rem; color: #666; font-family: 'Inter', sans-serif; }
+        .auth-switch a { color: #8ba888; font-weight: bold; text-decoration: none; cursor: pointer; }
+        #confirm-password, #email-input { display: none; }
+        .forgot-link { display: block; margin-top: 15px; color: #666; font-size: 0.9rem; text-decoration: none; font-family: 'Inter', sans-serif; }
+        .forgot-link:hover { color: #1a1a2e; text-decoration: underline; }
+    </style>
+</head>
+<body style="background-color: #f8f9fa;">
+    <div class="auth-container">
+        <h1 id="auth-title" style="font-family: 'Syne', sans-serif; color: #1a1a2e; margin-top: 0; font-size: 2.5rem;">Conectare</h1>
+        
+        <form id="auth-form" action="/login" method="POST" onsubmit="return validateForm()">
+            <input type="text" name="username" class="auth-input" placeholder="Nume utilizator" required autocomplete="off">
+            <input type="email" name="email" id="email-input" class="auth-input" placeholder="Adresa de email" autocomplete="off">
+            <input type="password" name="password" id="main-password" class="auth-input" placeholder="Parolă" required>
+            <input type="password" name="confirm_password" id="confirm-password" class="auth-input" placeholder="Confirmă parola">
+            
+            <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
+        </form>
+
+        <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
+
+        <div class="auth-switch">
+            <span id="auth-text">Nu ai cont?</span> 
+            <a onclick="toggleAuthMode()">Creează unul aici</a>
+        </div>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div style="background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 10px; border-radius: 8px; margin-top: 20px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 0.9rem;">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <script>
+        let isLogin = true;
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            const form = document.getElementById('auth-form');
+            const title = document.getElementById('auth-title');
+            const submitBtn = document.getElementById('auth-submit');
+            const confirmPw = document.getElementById('confirm-password');
+            const emailInput = document.getElementById('email-input');
+            const forgotLink = document.getElementById('forgot-pw-link');
+
+            if (isLogin) {
+                form.action = "/login";
+                title.innerText = "Conectare";
+                submitBtn.innerText = "Intră în cont";
+                confirmPw.style.display = "none";
+                emailInput.style.display = "none";
+                forgotLink.style.display = "block";
+                confirmPw.removeAttribute("required");
+                emailInput.removeAttribute("required");
+            } else {
+                form.action = "/register";
+                title.innerText = "Creare Cont";
+                submitBtn.innerText = "Înregistrează-te";
+                confirmPw.style.display = "block";
+                emailInput.style.display = "block";
+                forgotLink.style.display = "none";
+                confirmPw.setAttribute("required", "true");
+                emailInput.setAttribute("required", "true");
+            }
+        }
+        function validateForm() {
+            if (!isLogin) {
+                if (document.getElementById('main-password').value !== document.getElementById('confirm-password').value) {
+                    alert("Parolele nu se potrivesc!"); return false;
+                }
+            }
+            return true;
+        }
+    </script>
+</body>
+</html>
