@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ro">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <meta charset="UTF-8">
     <title>AI Tutor - Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -29,9 +30,10 @@
 
             <div style="text-align: left; font-size: 14px; color: #555;">
                 <p style="margin: 5px 0;">⭐ <strong>Scor:</strong> {{ xp }} </p>
-                <p style="margin: 5px 0;">🔥 <strong>Streak:</strong> {{ streak }} </p>
+                <p style="margin: 5px 0;">🔥 <strong>Strike curent:</strong> {{ strike_curent }} </p>
+                <p style="margin: 5px 0;">🏆 <strong>Record Strike:</strong> {{ record_strike }} </p>
                 <p style="margin: 5px 0;">❤️ <strong>Viață:</strong> {{ hp }}</p>
-                <p style="margin: 5px 0;">🕒 <strong>Ultima logare:</strong> {{last_date}}</p>
+                <p style="margin: 5px 0;">🕒 <strong>Ultima logare:</strong> {{ last_date }}</p>
             </div>
         </div>
     </div>
@@ -85,11 +87,14 @@
 
                     const data = await response.json();
 
-                    // 3. Verificăm dacă răspunsul este OK și îl afișăm
-                    if (data.ok) {
-                        chatBox.innerHTML += `<p><strong>AI Tutor:</strong> ${data.result}</p>`;
+                    
+                    if (data.ok && data.result) {
+                        // Ștergem orice eroare veche din chatBox dacă există
+                        chatBox.innerHTML += `<div class="ai-msg"><strong>AI Tutor:</strong> ${marked.parse(data.result)}</div>`;
                     } else {
-                        chatBox.innerHTML += `<p style="color: red;"><strong>Eroare:</strong> ${data.error}</p>`;
+                        // Afișăm eroarea DOAR dacă data.ok e false
+                        const msgEroare = data.error || data.message || "Eroare necunoscută";
+                        chatBox.innerHTML += `<p style="color: red;"><strong>Eroare:</strong> ${msgEroare}</p>`;
                     }
 
                 } catch (error) {

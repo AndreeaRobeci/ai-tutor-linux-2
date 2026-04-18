@@ -77,3 +77,40 @@ body {
 .exercitiu-item strong {
     color: #f5cfd5;
 }
+
+
+.message-content, #chat-box p {
+    white-space: pre-wrap;
+    line-height: 1.6; /* Face textul mai aerisit */
+    margin-bottom: 10px;
+}
+
+.ai-msg p { display: block; margin: 10px 0; }
+.ai-msg ul { margin-left: 20px; }
+.ai-msg code { background: #f4f4f4; padding: 2px 5px; border-radius: 4px; font-family: monospace; }
+
+
+/* Stilul pentru textul care va pluti */
+.xp-popup {
+    position: absolute;
+    top: 20px;
+    right: 30px; /* Îl punem în dreapta sus a exercițiului */
+    font-weight: bold;
+    font-size: 1.5rem;
+    pointer-events: none; /* Să nu blocheze click-urile mouse-ului */
+    animation: floatUp 1.5s ease-out forwards;
+    z-index: 100;
+}
+
+/* Culori diferite în funcție de performanță */
+.xp-10 { color: #2e7d32; } /* Verde pentru Perfect */
+.xp-7 { color: #1976d2; }  /* Albastru pentru Bine */
+.xp-5 { color: #f57f17; }  /* Portocaliu pentru Partial */
+.xp-0 { color: #d32f2f; }  /* Roșu pentru Greșeală */
+
+/* Animația propriu-zisă: pleacă de jos și se duce în sus dispărând */
+@keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(0.8); }
+    50% { opacity: 1; transform: translateY(-25px) scale(1.1); }
+    100% { opacity: 0; transform: translateY(-50px) scale(1); }
+}

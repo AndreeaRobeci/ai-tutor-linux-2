@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, g
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
-from gpt4all import GPT4All
+from groq import Groq
 from pdf_loader import load_pdf_text
 import os
 import json
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+
+from datetime import datetime
 
 # --- CONFIGURĂRI CĂI ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +34,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'aitutor288@gmail.com'
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
 
-MODEL_PATH = os.path.join("models", "Llama-3.2-3B-Instruct-Q4_0.gguf")
+client=Groq(api_key="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")
 model = None
 model_error = None
 
@@ -82,6 +84,10 @@ def login():
         user = db.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
+            timp_acum = datetime.now().strftime("%d-%m-%Y %H:%M")
+            db = get_db()
+            db.execute('UPDATE users SET last_date = ? WHERE id = ?', (timp_acum, user['id']))
+            db.commit()
             session['username'] = user['username']
             return redirect(url_for('chat_page'))
         flash('Date incorecte!')
@@ -216,8 +222,8 @@ def chat_page():
     cursor = conn.cursor()
     
     try:
-        # Acum extragem și avatarul
-        cursor.execute("SELECT xp, hp, streak, last_date, avatar FROM users WHERE id = ?", (user_id,))
+        # 1. AICI AM MODIFICAT: extragem strike_curent și record_strike în loc de streak
+        cursor.execute("SELECT xp, hp, strike_curent, record_strike, last_date, avatar FROM users WHERE id = ?", (user_id,))
         user_data = cursor.fetchone()
     except sqlite3.OperationalError:
         user_data = None
@@ -225,19 +231,22 @@ def chat_page():
     conn.close()
     
     if user_data:
+        # 2. AICI AM MODIFICAT: ordinea se schimbă pentru că am adăugat un element nou în SELECT
         xp = user_data[0] if user_data[0] is not None else 0
         hp = user_data[1] if user_data[1] is not None else 5
-        streak = user_data[2] if user_data[2] is not None else 0
-        last_date = user_data[3] if user_data[3] is not None else "N/A"
+        strike_curent = user_data[2] if user_data[2] is not None else 0
+        record_strike = user_data[3] if user_data[3] is not None else 0
+        last_date = user_data[4] if user_data[4] is not None else "N/A"
         
-        # Dacă are avatar în baza de date, îi creăm calea. Dacă nu, îi punem poza default.
-        avatar_db = user_data[4] if len(user_data) > 4 and user_data[4] else None
+        # Avatarul este acum pe poziția [5]
+        avatar_db = user_data[5] if len(user_data) > 5 and user_data[5] else None
         if avatar_db:
             avatar_url = f"/static/avatars/{avatar_db}"
         else:
             avatar_url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
     else:
-        xp, hp, streak, last_date, avatar_url = 0, 5, 0, "N/A", "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        # 3. Și aici am actualizat ca să reflecte noile variabile
+        xp, hp, strike_curent, record_strike, last_date, avatar_url = 0, 5, 0, 0, "N/A", "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
         
     if xp < 50:
         rang = "🟢 Newbie Linux"
@@ -246,33 +255,191 @@ def chat_page():
     else:
         rang = "🟣 Script Hacker"
         
-    return render_template("index.html", xp=xp, hp=hp, streak=streak, last_date=last_date, rang=rang, avatar_url=avatar_url)
+    # 4. Aici ai făcut tu bine, le trimitem pe amândouă către index.html
+    return render_template("index.html", xp=xp, hp=hp, strike_curent=strike_curent, record_strike=record_strike, last_date=last_date, rang=rang, avatar_url=avatar_url)
 
 
-@app.route("/exercices")
-def exercices_page():
-    # 1. Verificăm dacă utilizatorul este logat
-    if 'user_id' not in session: 
+# 1. Ruta care trimite datele exercițiilor (din JSON) către Javascript
+@app.route('/api/exercices')
+def api_exercices():
+    import json
+    from flask import jsonify
+    with open('data/exercices.json', 'r', encoding='utf-8') as f:
+        return jsonify(json.load(f))
+
+
+# 2. Ruta care afișează pagina web (HTML)
+@app.route('/exercices')
+def exercices():
+    if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # 2. Ne conectăm la baza de date pentru a lua statisticile (hp, xp, streak)
-    conn = sqlite3.connect('database.db')
-    conn.row_factory = sqlite3.Row
-    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    conn.close()
+    db = get_db()
+    user = db.execute('SELECT xp, hp, strike_curent FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    
+    xp = user['xp']
+    hp = user['hp']
+    strike_curent = user['strike_curent'] if user['strike_curent'] is not None else 0
+    
+    return render_template('exercices.html', xp=xp, hp=hp, strike_curent=strike_curent)
 
-    # 3. Trimitem datele către fișierul exercices.html
-    return render_template("exercices.html", hp=user['hp'], xp=user['xp'], streak=user['streak'])
 
-# 2. Ruta pentru JAVASCRIPT (Trimite datele din JSON în fundal)
-@app.route('/api/exercices')
-def get_exercices_data():
-    import os
-    import json
-    json_path = os.path.join('data', 'exercices.json') # Asigură-te că folderul se numește 'data'
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    return jsonify(data)
+# Setează un context scurt ca să nu proceseze mii de cuvinte
+SYSTEM_PROMPT = """Ești un Profesor de Linux dedicat și răbdător. 
+Scopul tău este să transformi un începător absolut într-un utilizator avansat.
+
+REGULI DE AUR:
+1. EDUCAȚIE: Când cineva spune că nu știe nimic sau cere să învețe, NU da doar comenzi. Explică CONCEPTUL (ce este un terminal, ce este un sistem de fișiere, de ce folosim linii de comandă).
+2. STRUCTURĂ: Împarte informația în lecții logice. Folosește titluri, bold și liste.
+3. EXEMPLE: Fiecare bucată de teorie trebuie să aibă un exemplu practic de comandă.
+4. ÎNCURAJARE: La finalul unei lecții, întreabă utilizatorul dacă a înțeles sau dacă vrea să treacă la pasul următor.
+5. LIMBA: Răspunde exclusiv în limba română, într-un stil prietenos dar profesional."""
+
+
+@app.route('/api/ask', methods=['POST'])
+def ask():
+    try:
+        data = request.json
+        user_query = data.get('question', '') or data.get('text', '')
+
+        # Folosim contextul din PDF (variabila pe care o ai deja la începutul codului)
+        # Luăm doar o parte din el ca să fie rapid
+        context = PDF_CONTENT[:3000] if 'PDF_CONTENT' in globals() else ""
+
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_query}
+            ],
+            temperature=0.4, # Puțin mai mare pentru a fi mai creativ în explicații
+            max_tokens=1200
+        )
+
+        raspuns_final = completion.choices[0].message.content
+        
+        # Trimitem ambele chei ca să fim siguri că JavaScript-ul o găsește pe cea bună
+        return jsonify({
+            "ok": True,
+            "result": raspuns_final,
+            "answer": raspuns_final
+        })
+
+    except Exception as e:
+        print(f"Eroare: {e}")
+        return jsonify({"ok": False, "result": "Eroare la AI", "answer": "Eroare la AI"}), 500
+    
+
+@app.route('/api/check_answer', methods=['POST'])
+def check_answer():
+    if 'user_id' not in session:
+        return jsonify({"error": "Neautentificat. Te rog să te loghezi."}), 401
+
+    data = request.json
+    cerinta = data.get('cerinta', '')
+    raspuns_utilizator = data.get('raspuns', '')
+
+    if not cerinta or not raspuns_utilizator:
+        return jsonify({"error": "Date incomplete."}), 400
+
+    try:
+        # 1. NOUL PROMPT: Evaluator strict + Anti-Trișat + Scor pe 4 trepte
+        eval_prompt = f"""Esti un profesor de Linux prietenos, dar strict. Evaluezi raspunsul utilizatorului pentru o cerinta.
+
+        Cerinta: {cerinta}
+        Raspunsul utilizatorului: {raspuns_utilizator}
+
+        REGULI STRICTE:
+        1. Daca raspunsul este complet corect, confirma scurt si felicita-l.
+        2. Daca raspunsul este gresit:
+        - ESTE STRICT INTERZIS SA II SPUI COMANDA CORECTA! Nu ii da solutia!
+        - Explica-i pe scurt ce face de fapt comanda introdusa de el (ex: "Ai folosit 'cd', dar aceasta comanda te muta in alt folder, nu afiseaza unde esti").
+        - Ofera-i un singur indiciu (hint) conceptual care sa il ajute sa isi aminteasca sau sa caute comanda corecta (ex: "Gandeste-te la acronimul pentru 'Print Working Directory'").
+        3. Fii concis, clar si foloseste limba romana.
+        
+        Reguli Anti-Trișat (CRITIC):
+        Un terminal Linux acceptă doar comenzi pure. Dacă răspunsul utilizatorului conține cuvinte conversaționale ("comanda este", "salut"), explicații sau folosește formatare specifică AI (backticks, ghilimele), dă automat nota 0.
+        
+        Reguli de Punctare:
+        - 10: DOAR comanda corectă, perfectă și optimă.
+        - 7: Comanda rezolvă corect cerința, dar nu este cea mai eficientă (flag-uri inutile, cale prea lungă).
+        - 5: A nimerit comanda de bază, dar a greșit/uitat un parametru critic sau calea (ex: a uitat -r). Comanda e pe aproape.
+        - 0: Comandă total greșită sau încalcă Regulile Anti-Trișat.
+        
+        Răspunde STRICT în format JSON valid, exact cu această structură:
+        {{
+            "scor": numar (10, 7, 5 sau 0), 
+            "feedback": "Explicație scurtă (1-2 propoziții) în limba română."
+        }}"""
+
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "system", "content": eval_prompt}],
+            temperature=0.1, 
+            response_format={"type": "json_object"} 
+        )
+
+        # Extragem răspunsul AI-ului
+        rezultat_ai = json.loads(completion.choices[0].message.content)
+        scor = rezultat_ai.get("scor", 0)
+        feedback = rezultat_ai.get("feedback", "Fără feedback.")
+
+        # 2. Actualizăm Baza de Date
+        db = get_db()
+        user_id = session['user_id']
+        
+        # Extragem noile coloane în loc de streak
+        user = db.execute('SELECT xp, hp, strike_curent, record_strike FROM users WHERE id = ?', (user_id,)).fetchone()
+        
+        xp = user['xp']
+        hp = user['hp']
+        strike_curent = user['strike_curent'] if user['strike_curent'] is not None else 0
+        record_strike = user['record_strike'] if user['record_strike'] is not None else 0
+
+        # Logica pentru Gamification bazată pe noul scor
+        este_corect = False
+
+        if scor == 10:
+            xp += 10
+            strike_curent += 1
+            if strike_curent > record_strike:
+                record_strike = strike_curent
+            este_corect = True
+        elif scor == 7:
+            xp += 7
+            strike_curent += 1
+            if strike_curent > record_strike:
+                record_strike = strike_curent
+            este_corect = True
+        elif scor == 5:
+            xp += 5
+            # La 5 XP nu pierde viață și nu își pierde strike-ul, dar exercițiul NU e marcat ca rezolvat.
+            este_corect = False 
+        else: # scor == 0
+            hp -= 1
+            strike_curent = 0 # Strike-ul o ia de la zero
+            este_corect = False
+            if hp < 0: 
+                hp = 0
+
+        # Salvăm noile statistici în baza de date
+        db.execute('UPDATE users SET xp = ?, hp = ?, strike_curent = ?, record_strike = ? WHERE id = ?', 
+                   (xp, hp, strike_curent, record_strike, user_id))
+        db.commit()
+
+        # 3. Trimitem rezultatul către frontend (browser)
+        return jsonify({
+            "scor": scor,               # Trimitem scorul pentru a declanșa animația
+            "corect": este_corect,      # Decide dacă exercițiul devine verde/bifat
+            "feedback": feedback,
+            "new_xp": xp,
+            "new_hp": hp,
+            "strike_curent": strike_curent # Frontend-ul are nevoie doar de cel curent pentru animație
+        })
+
+    except Exception as e:
+        print(f"Eroare la verificare AI: {e}")
+        return jsonify({"error": "Eroare la evaluarea răspunsului."}), 500
 
 
 if __name__ == "__main__":
