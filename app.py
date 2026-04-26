@@ -46,6 +46,25 @@ def get_db():
         db.row_factory = sqlite3.Row
     return db
 
+
+def get_skipped_task_ids(start_world):
+    with open(json_path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    skipped = []
+
+    for lume in data["curs_linux"]:
+        if lume["id_lume"] < start_world:
+            for skill in lume["skill_uri"]:
+                for ex in skill["exercitii"]:
+                    skipped.append(ex["id"])
+
+            if lume.get("boss_level") and lume["boss_level"].get("cerinta"):
+                skipped.append(f"boss-{lume['id_lume']}")
+
+    return skipped
+
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -93,20 +112,118 @@ def login():
         flash('Date incorecte!')
     return render_template('login.html')
 
+
 @app.route('/register', methods=['POST'])
 def register():
     username = request.form['username']
     email = request.form['email']
     password = request.form['password']
+
     db = get_db()
     try:
         hashed_pw = generate_password_hash(password)
-        db.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', (username, email, hashed_pw))
+
+        cursor = db.execute(
+            'INSERT INTO users (username, email, password, start_world) VALUES (?, ?, ?, ?)',
+            (username, email, hashed_pw, 1)
+        )
         db.commit()
-        flash('Cont creat! Te poți conecta.')
+
+        user_id = cursor.lastrowid
+
+        session['pending_user_id'] = user_id
+        session['pending_username'] = username
+
+        return redirect(url_for('onboarding'))
+
     except:
         flash('Username sau Email deja existent!')
-    return redirect(url_for('login'))
+        return redirect(url_for('login'))
+
+@app.route('/onboarding')
+def onboarding():
+    if 'pending_user_id' not in session:
+        return redirect(url_for('login'))
+
+    return render_template('onboarding.html')
+
+
+@app.route('/set_level_beginner', methods=['POST'])
+def set_level_beginner():
+    if 'pending_user_id' not in session:
+        return redirect(url_for('login'))
+
+    db = get_db()
+    user_id = session['pending_user_id']
+
+    db.execute('UPDATE users SET start_world = ? WHERE id = ?', (1, user_id))
+    db.commit()
+
+    session['user_id'] = user_id
+    session['username'] = session.get('pending_username')
+
+    session.pop('pending_user_id', None)
+    session.pop('pending_username', None)
+
+    return redirect(url_for('exercices'))
+
+
+@app.route('/submit_placement_test', methods=['POST'])
+def submit_placement_test():
+    if 'pending_user_id' not in session:
+        return redirect(url_for('login'))
+
+    score = 0
+    score += int(request.form.get('q1', 0))
+    score += int(request.form.get('q2', 0))
+    score += int(request.form.get('q3', 0))
+    score += int(request.form.get('q4', 0))
+    score += int(request.form.get('q5', 0))
+
+    if score >= 4:
+        start_world = 4
+    elif score == 3:
+        start_world = 3
+    elif score == 2:
+        start_world = 2
+    else:
+        start_world = 1
+
+    skipped_tasks = get_skipped_task_ids(start_world)
+    xp_bonus = len(skipped_tasks) * 10
+
+    db = get_db()
+    user_id = session['pending_user_id']
+
+    db.execute(
+        'UPDATE users SET start_world = ?, xp = ? WHERE id = ?',
+        (start_world, xp_bonus, user_id)
+    )
+
+    for task_id in skipped_tasks:
+        try:
+            db.execute(
+                'INSERT OR IGNORE INTO completed_tasks (user_id, task_id) VALUES (?, ?)',
+                (user_id, task_id)
+            )
+        except:
+            pass
+
+    db.commit()
+
+    session['user_id'] = user_id
+    session['username'] = session.get('pending_username')
+
+    session.pop('pending_user_id', None)
+    session.pop('pending_username', None)
+
+    return render_template(
+        'placement_result.html',
+        score=score,
+        start_world=start_world,
+        xp_bonus=xp_bonus
+    )
+
 
 @app.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():
@@ -222,7 +339,7 @@ def chat_page():
     cursor = conn.cursor()
     
     try:
-        # 1. AICI AM MODIFICAT: extragem strike_curent și record_strike în loc de streak
+        
         cursor.execute("SELECT xp, hp, strike_curent, record_strike, last_date, avatar FROM users WHERE id = ?", (user_id,))
         user_data = cursor.fetchone()
     except sqlite3.OperationalError:
@@ -275,14 +392,24 @@ def exercices():
         return redirect(url_for('login'))
     
     db = get_db()
-    user = db.execute('SELECT xp, hp, strike_curent FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    user = db.execute(
+        'SELECT xp, hp, strike_curent, start_world FROM users WHERE id = ?',
+        (session['user_id'],)
+    ).fetchone()
     
     xp = user['xp']
     hp = user['hp']
     strike_curent = user['strike_curent'] if user['strike_curent'] is not None else 0
+    start_world = user['start_world'] if user['start_world'] is not None else 1
     
-    return render_template('exercices.html', xp=xp, hp=hp, strike_curent=strike_curent)
-
+    return render_template(
+        'exercices.html',
+        xp=xp,
+        hp=hp,
+        strike_curent=strike_curent,
+        start_world=start_world,
+        username=session['username']
+    )
 
 # Setează un context scurt ca să nu proceseze mii de cuvinte
 SYSTEM_PROMPT = """Ești un Profesor de Linux dedicat și răbdător. 
@@ -440,6 +567,24 @@ def check_answer():
     except Exception as e:
         print(f"Eroare la verificare AI: {e}")
         return jsonify({"error": "Eroare la evaluarea răspunsului."}), 500
+
+
+@app.route('/api/reset_lives', methods=['POST'])
+def reset_lives():
+    if 'user_id' not in session:
+        return jsonify({"error": "Neautentificat"}), 401
+
+    db = get_db()
+    db.execute(
+        'UPDATE users SET hp = ? WHERE id = ?',
+        (5, session['user_id'])
+    )
+    db.commit()
+
+    return jsonify({
+        "ok": True,
+        "hp": 5
+    })
 
 
 if __name__ == "__main__":

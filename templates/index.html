@@ -29,12 +29,26 @@
             <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 15px;">
 
             <div style="text-align: left; font-size: 14px; color: #555;">
-                <p style="margin: 5px 0;">⭐ <strong>Scor:</strong> {{ xp }} </p>
+                <p style="margin: 5px 0;">⭐ <strong>Scor:</strong> <span id="profile-xp">{{ xp }}</span></p>
                 <p style="margin: 5px 0;">🔥 <strong>Strike curent:</strong> {{ strike_curent }} </p>
                 <p style="margin: 5px 0;">🏆 <strong>Record Strike:</strong> {{ record_strike }} </p>
-                <p style="margin: 5px 0;">❤️ <strong>Viață:</strong> {{ hp }}</p>
+                <p style="margin: 5px 0;">❤️ <strong>Viață:</strong> <span id="profile-hp">{{ hp }}</span></p>
                 <p style="margin: 5px 0;">🕒 <strong>Ultima logare:</strong> {{ last_date }}</p>
             </div>
+
+            <a href="/logout" style="
+                display: block;
+                margin-top: 18px;
+                padding: 10px 15px;
+                background-color: #ff4757;
+                color: white;
+                border-radius: 10px;
+                text-decoration: none;
+                font-weight: bold;
+                font-family: 'Inter', sans-serif;
+            ">
+                Deconectare
+            </a>
         </div>
     </div>
 
@@ -135,6 +149,10 @@
                 fereastraProfil.style.display = 'none';
             }
         });
+
+
+        
+
     </script>
 </body>
 </html>

@@ -8,61 +8,366 @@
         {
           "id_skill": 1,
           "titlu": "Navigare",
+          "lectie": {
+            "titlu": "Navigare în terminal",
+            "descriere": "În acest skill înveți cum te orientezi într-un sistem Linux: unde ești, ce există în directorul curent și cum te muți între directoare.",
+            "concepte": [
+              {
+                "nume": "pwd",
+                "explicatie": "Afișează calea absolută a directorului curent."
+              },
+              {
+                "nume": "ls",
+                "explicatie": "Listează fișierele și directoarele din locul în care te afli."
+              },
+              {
+                "nume": "cd",
+                "explicatie": "Schimbă directorul curent."
+              },
+              {
+                "nume": "..",
+                "explicatie": "Reprezintă directorul părinte."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "pwd",
+                "explicatie": "Îți arată unde te afli."
+              },
+              {
+                "comanda": "ls",
+                "explicatie": "Îți arată conținutul directorului curent."
+              },
+              {
+                "comanda": "cd /var/log",
+                "explicatie": "Te mută în directorul /var/log."
+              },
+              {
+                "comanda": "cd ..",
+                "explicatie": "Te întoarce în directorul părinte."
+              }
+            ],
+            "retine": "pwd = unde sunt, ls = ce există aici, cd = unde merg."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s1_1", "cerinta": "Afișează conținutul directorului curent.", "comanda_corecta": "" },
-            { "id": "s1_2", "cerinta": "Mergi în directorul /var/log folosind cale absolută.", "comanda_corecta": "" },
-            { "id": "s1_3", "cerinta": "Mergi în directorul părinte folosind notația specifică.", "comanda_corecta": "" },
-            { "id": "s1_4", "cerinta": "Navighează din /home/student în /home/student/proiecte/linux folosind cale relativă.", "comanda_corecta": "" },
-            { "id": "s1_5", "cerinta": "Afișează calea absolută a directorului în care te afli.", "comanda_corecta": "" }
+            {
+              "id": "s1_1",
+              "cerinta": "Afișează conținutul directorului curent.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s1_2",
+              "cerinta": "Mergi în directorul /var/log folosind cale absolută.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s1_3",
+              "cerinta": "Mergi în directorul părinte folosind notația specifică.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s1_4",
+              "cerinta": "Navighează din /home/student în /home/student/proiecte/linux folosind cale relativă.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s1_5",
+              "cerinta": "Afișează calea absolută a directorului în care te afli.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 2,
           "titlu": "Manipulare fișiere",
+          "lectie": {
+            "titlu": "Manipulare fișiere și directoare",
+            "descriere": "În acest skill înveți să creezi, copiezi, muți și ștergi fișiere/directoare, operații de bază pentru orice utilizator Linux.",
+            "concepte": [
+              {
+                "nume": "mkdir",
+                "explicatie": "Creează directoare."
+              },
+              {
+                "nume": "touch",
+                "explicatie": "Creează fișiere goale sau actualizează timestamp-ul."
+              },
+              {
+                "nume": "cp",
+                "explicatie": "Copiază fișiere/directoare."
+              },
+              {
+                "nume": "mv",
+                "explicatie": "Mută sau redenumește."
+              },
+              {
+                "nume": "rm",
+                "explicatie": "Șterge fișiere/directoare."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "mkdir laborator",
+                "explicatie": "Creează directorul laborator."
+              },
+              {
+                "comanda": "touch a.txt b.txt c.txt",
+                "explicatie": "Creează trei fișiere goale."
+              },
+              {
+                "comanda": "cp a.txt backup/",
+                "explicatie": "Copiază a.txt în backup."
+              },
+              {
+                "comanda": "rm -r backup",
+                "explicatie": "Șterge directorul backup cu tot conținutul."
+              }
+            ],
+            "retine": "Atenție la rm -r: șterge recursiv și poate elimina multe fișiere."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s2_1", "cerinta": "Creează un director numit laborator.", "comanda_corecta": "" },
-            { "id": "s2_2", "cerinta": "În interiorul lui, creează 3 fișiere: a.txt, b.txt, c.txt.", "comanda_corecta": "" },
-            { "id": "s2_3", "cerinta": "Copiază a.txt într-un director numit backup.", "comanda_corecta": "" },
-            { "id": "s2_4", "cerinta": "Mută b.txt în directorul backup.", "comanda_corecta": "" },
-            { "id": "s2_5", "cerinta": "Șterge directorul backup împreună cu tot conținutul lui.", "comanda_corecta": "" }
+            {
+              "id": "s2_1",
+              "cerinta": "Creează un director numit laborator.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s2_2",
+              "cerinta": "În interiorul lui, creează 3 fișiere: a.txt, b.txt, c.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s2_3",
+              "cerinta": "Copiază a.txt într-un director numit backup.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s2_4",
+              "cerinta": "Mută b.txt în directorul backup.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s2_5",
+              "cerinta": "Șterge directorul backup împreună cu tot conținutul lui.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 3,
           "titlu": "Vizualizare fișiere",
+          "lectie": {
+            "titlu": "Vizualizare fișiere",
+            "descriere": "În Linux este important să inspectezi rapid conținutul fișierelor fără să le deschizi într-un editor.",
+            "concepte": [
+              {
+                "nume": "cat",
+                "explicatie": "Afișează tot conținutul unui fișier."
+              },
+              {
+                "nume": "head",
+                "explicatie": "Afișează primele linii."
+              },
+              {
+                "nume": "tail",
+                "explicatie": "Afișează ultimele linii."
+              },
+              {
+                "nume": "less",
+                "explicatie": "Permite navigare interactivă în fișiere lungi."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "cat notes.txt",
+                "explicatie": "Afișează tot fișierul."
+              },
+              {
+                "comanda": "head -n 5 notes.txt",
+                "explicatie": "Afișează primele 5 linii."
+              },
+              {
+                "comanda": "tail -n 10 notes.txt",
+                "explicatie": "Afișează ultimele 10 linii."
+              },
+              {
+                "comanda": "less notes.txt",
+                "explicatie": "Deschide fișierul interactiv."
+              }
+            ],
+            "retine": "Pentru fișiere mari, less este mai potrivit decât cat."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s3_1", "cerinta": "Afișează conținutul fișierului notes.txt.", "comanda_corecta": "" },
-            { "id": "s3_2", "cerinta": "Afișează doar primele 5 linii din notes.txt.", "comanda_corecta": "" },
-            { "id": "s3_3", "cerinta": "Afișează ultimele 10 linii din notes.txt.", "comanda_corecta": "" },
-            { "id": "s3_4", "cerinta": "Deschide fișierul notes.txt în mod interactiv pentru navigare.", "comanda_corecta": "" },
-            { "id": "s3_5", "cerinta": "Afișează simultan primele 3 și ultimele 3 linii dintr-un fișier.", "comanda_corecta": "" }
+            {
+              "id": "s3_1",
+              "cerinta": "Afișează conținutul fișierului notes.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s3_2",
+              "cerinta": "Afișează doar primele 5 linii din notes.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s3_3",
+              "cerinta": "Afișează ultimele 10 linii din notes.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s3_4",
+              "cerinta": "Deschide fișierul notes.txt în mod interactiv pentru navigare.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s3_5",
+              "cerinta": "Afișează simultan primele 3 și ultimele 3 linii dintr-un fișier.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 4,
           "titlu": "Wildcards de bază",
+          "lectie": {
+            "titlu": "Wildcards de bază",
+            "descriere": "Wildcards sunt modele care îți permit să selectezi mai multe fișiere după nume, extensie sau structură.",
+            "concepte": [
+              {
+                "nume": "*",
+                "explicatie": "Înlocuiește orice număr de caractere."
+              },
+              {
+                "nume": "?",
+                "explicatie": "Înlocuiește exact un caracter."
+              },
+              {
+                "nume": "*.txt",
+                "explicatie": "Selectează fișierele care se termină în .txt."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls *.txt",
+                "explicatie": "Listează toate fișierele .txt."
+              },
+              {
+                "comanda": "ls log*",
+                "explicatie": "Listează fișierele care încep cu log."
+              },
+              {
+                "comanda": "rm *.tmp",
+                "explicatie": "Șterge fișierele .tmp."
+              },
+              {
+                "comanda": "ls ???.txt",
+                "explicatie": "Listează fișierele cu exact 3 caractere înainte de .txt."
+              }
+            ],
+            "retine": "* = orice număr de caractere, ? = exact un caracter."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s4_1", "cerinta": "Listează toate fișierele care se termină în .txt.", "comanda_corecta": "" },
-            { "id": "s4_2", "cerinta": "Listează toate fișierele care încep cu log.", "comanda_corecta": "" },
-            { "id": "s4_3", "cerinta": "Șterge toate fișierele care se termină în .tmp.", "comanda_corecta": "" },
-            { "id": "s4_4", "cerinta": "Copiază toate fișierele .jpg într-un director numit imagini.", "comanda_corecta": "" },
-            { "id": "s4_5", "cerinta": "Listează toate fișierele cu exact 3 caractere înainte de extensia .txt.", "comanda_corecta": "" }
+            {
+              "id": "s4_1",
+              "cerinta": "Listează toate fișierele care se termină în .txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s4_2",
+              "cerinta": "Listează toate fișierele care încep cu log.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s4_3",
+              "cerinta": "Șterge toate fișierele care se termină în .tmp.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s4_4",
+              "cerinta": "Copiază toate fișierele .jpg într-un director numit imagini.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s4_5",
+              "cerinta": "Listează toate fișierele cu exact 3 caractere înainte de extensia .txt.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 5,
           "titlu": "Redirectionare simplă",
+          "lectie": {
+            "titlu": "Redirecționare simplă",
+            "descriere": "Redirecționarea controlează unde ajunge output-ul unei comenzi: pe ecran, într-un fișier sau într-un flux de eroare.",
+            "concepte": [
+              {
+                "nume": ">",
+                "explicatie": "Scrie STDOUT într-un fișier, suprascriind conținutul."
+              },
+              {
+                "nume": ">>",
+                "explicatie": "Adaugă STDOUT la finalul unui fișier."
+              },
+              {
+                "nume": "2>",
+                "explicatie": "Redirecționează STDERR."
+              },
+              {
+                "nume": "&>",
+                "explicatie": "Redirecționează STDOUT și STDERR în același fișier."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls > lista.txt",
+                "explicatie": "Salvează rezultatul în lista.txt."
+              },
+              {
+                "comanda": "date >> log.txt",
+                "explicatie": "Adaugă data la finalul logului."
+              },
+              {
+                "comanda": "comanda_gresita 2> errors.txt",
+                "explicatie": "Salvează erorile."
+              },
+              {
+                "comanda": "comanda &> all.txt",
+                "explicatie": "Salvează output și erori în același fișier."
+              }
+            ],
+            "retine": "> suprascrie, >> adaugă la final."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s5_1", "cerinta": "Redirecționează output-ul comenzii ls într-un fișier numit lista.txt.", "comanda_corecta": "" },
-            { "id": "s5_2", "cerinta": "Adaugă rezultatul comenzii date la finalul fișierului log.txt.", "comanda_corecta": "" },
-            { "id": "s5_3", "cerinta": "Redirecționează erorile generate de o comandă într-un fișier errors.txt.", "comanda_corecta": "" },
-            { "id": "s5_4", "cerinta": "Separă STDOUT într-un fișier și STDERR într-alt fișier.", "comanda_corecta": "" },
-            { "id": "s5_5", "cerinta": "Redirecționează atât STDOUT cât și STDERR într-un singur fișier.", "comanda_corecta": "" }
+            {
+              "id": "s5_1",
+              "cerinta": "Redirecționează output-ul comenzii ls într-un fișier numit lista.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s5_2",
+              "cerinta": "Adaugă rezultatul comenzii date la finalul fișierului log.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s5_3",
+              "cerinta": "Redirecționează erorile generate de o comandă într-un fișier errors.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s5_4",
+              "cerinta": "Separă STDOUT într-un fișier și STDERR într-alt fișier.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s5_5",
+              "cerinta": "Redirecționează atât STDOUT cât și STDERR într-un singur fișier.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -79,61 +384,393 @@
         {
           "id_skill": 6,
           "titlu": "Permisiuni",
-          "concepte": ["Rwx", "chmod numeric", "simbolic"],
+          "lectie": {
+            "titlu": "Permisiuni Linux",
+            "descriere": "Permisiunile controlează cine poate citi, scrie sau executa fișiere/directoare.",
+            "concepte": [
+              {
+                "nume": "r",
+                "explicatie": "read: permisiune de citire."
+              },
+              {
+                "nume": "w",
+                "explicatie": "write: permisiune de scriere."
+              },
+              {
+                "nume": "x",
+                "explicatie": "execute: permisiune de execuție/acces."
+              },
+              {
+                "nume": "chmod",
+                "explicatie": "Modifică permisiunile."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls -l script.sh",
+                "explicatie": "Afișează permisiunile."
+              },
+              {
+                "comanda": "chmod 754 script.sh",
+                "explicatie": "Setează rwxr-xr--."
+              },
+              {
+                "comanda": "chmod u+x script.sh",
+                "explicatie": "Adaugă execuție pentru owner."
+              },
+              {
+                "comanda": "chmod g-w file.txt",
+                "explicatie": "Elimină scrierea pentru grup."
+              }
+            ],
+            "retine": "Permisiunile se citesc pentru owner, group și others."
+          },
+          "concepte": [
+            "Rwx",
+            "chmod numeric",
+            "simbolic"
+          ],
           "exercitii": [
-            { "id": "s6_1", "cerinta": "Afișează permisiunile fișierului script.sh.", "comanda_corecta": "" },
-            { "id": "s6_2", "cerinta": "Setează permisiunile fișierului script.sh la rwxr-xr-- folosind metodă numerică.", "comanda_corecta": "" },
-            { "id": "s6_3", "cerinta": "Adaugă permisiune de execuție pentru owner folosind metodă simbolică.", "comanda_corecta": "" },
-            { "id": "s6_4", "cerinta": "Elimină permisiunea de scriere pentru grup dintr-un fișier.", "comanda_corecta": "" },
-            { "id": "s6_5", "cerinta": "Setează un director astfel încât doar owner-ul să aibă acces complet.", "comanda_corecta": "" }
+            {
+              "id": "s6_1",
+              "cerinta": "Afișează permisiunile fișierului script.sh.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s6_2",
+              "cerinta": "Setează permisiunile fișierului script.sh la rwxr-xr-- folosind metodă numerică.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s6_3",
+              "cerinta": "Adaugă permisiune de execuție pentru owner folosind metodă simbolică.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s6_4",
+              "cerinta": "Elimină permisiunea de scriere pentru grup dintr-un fișier.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s6_5",
+              "cerinta": "Setează un director astfel încât doar owner-ul să aibă acces complet.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 7,
           "titlu": "Utilizatori",
-          "concepte": ["Sudo", "su", "useradd", "passwd"],
+          "lectie": {
+            "titlu": "Utilizatori în Linux",
+            "descriere": "Înveți cum se creează utilizatori, cum se schimbă parole și cum verifici identitatea unui user.",
+            "concepte": [
+              {
+                "nume": "sudo",
+                "explicatie": "Rulează comenzi cu privilegii administrative."
+              },
+              {
+                "nume": "useradd",
+                "explicatie": "Creează utilizatori."
+              },
+              {
+                "nume": "passwd",
+                "explicatie": "Setează parola unui utilizator."
+              },
+              {
+                "nume": "id",
+                "explicatie": "Afișează UID/GID."
+              },
+              {
+                "nume": "su",
+                "explicatie": "Schimbă utilizatorul curent."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "sudo useradd testuser",
+                "explicatie": "Creează utilizator."
+              },
+              {
+                "comanda": "sudo passwd dev1",
+                "explicatie": "Setează parola."
+              },
+              {
+                "comanda": "id dev1",
+                "explicatie": "Afișează UID-ul și grupurile."
+              },
+              {
+                "comanda": "su - dev1",
+                "explicatie": "Schimbă utilizatorul."
+              }
+            ],
+            "retine": "Operațiile de administrare utilizatori cer de obicei sudo."
+          },
+          "concepte": [
+            "Sudo",
+            "su",
+            "useradd",
+            "passwd"
+          ],
           "exercitii": [
-            { "id": "s7_1", "cerinta": "Creează un utilizator numit testuser.", "comanda_corecta": "" },
-            { "id": "s7_2", "cerinta": "Creează un utilizator dev1 cu comentariul „Developer One”.", "comanda_corecta": "" },
-            { "id": "s7_3", "cerinta": "Setează o parolă pentru utilizatorul dev1.", "comanda_corecta": "" },
-            { "id": "s7_4", "cerinta": "Afișează UID-ul utilizatorului dev1.", "comanda_corecta": "" },
-            { "id": "s7_5", "cerinta": "Schimbă utilizatorul curent în dev1.", "comanda_corecta": "" }
+            {
+              "id": "s7_1",
+              "cerinta": "Creează un utilizator numit testuser.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s7_2",
+              "cerinta": "Creează un utilizator dev1 cu comentariul „Developer One”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s7_3",
+              "cerinta": "Setează o parolă pentru utilizatorul dev1.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s7_4",
+              "cerinta": "Afișează UID-ul utilizatorului dev1.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s7_5",
+              "cerinta": "Schimbă utilizatorul curent în dev1.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 8,
           "titlu": "Wildcards avansate",
-          "concepte": ["[ ]", "ranges", "escape"],
+          "lectie": {
+            "titlu": "Wildcards avansate",
+            "descriere": "Modelele avansate te ajută să selectezi fișiere după intervale, clase de caractere sau caractere speciale.",
+            "concepte": [
+              {
+                "nume": "[ ]",
+                "explicatie": "Definește o listă sau un interval de caractere."
+              },
+              {
+                "nume": "[1-5]",
+                "explicatie": "Un caracter numeric între 1 și 5."
+              },
+              {
+                "nume": "[a-f]",
+                "explicatie": "O literă între a și f."
+              },
+              {
+                "nume": "\\*",
+                "explicatie": "Caracterul * tratat literal."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls *[1-5].txt",
+                "explicatie": "Fișiere .txt cu cifră 1-5 înainte de extensie."
+              },
+              {
+                "comanda": "ls [a-f]*",
+                "explicatie": "Fișiere care încep cu a-f."
+              },
+              {
+                "comanda": "ls a?c",
+                "explicatie": "Nume cu exact un caracter între a și c."
+              },
+              {
+                "comanda": "ls *\\**",
+                "explicatie": "Fișiere care conțin caracterul *."
+              }
+            ],
+            "retine": "Dacă vrei caracterul * literal, trebuie escapate: \\*."
+          },
+          "concepte": [
+            "[ ]",
+            "ranges",
+            "escape"
+          ],
           "exercitii": [
-            { "id": "s8_1", "cerinta": "Listează fișierele care se termină în .txt și au o cifră între 1 și 5 înainte de extensie.", "comanda_corecta": "" },
-            { "id": "s8_2", "cerinta": "Listează fișierele care încep cu o literă între a și f.", "comanda_corecta": "" },
-            { "id": "s8_3", "cerinta": "Listează fișierele care conțin exact un caracter între două litere (ex: a?c).", "comanda_corecta": "" },
-            { "id": "s8_4", "cerinta": "Listează fișierele care conțin caracterul * în nume (folosind escape corect).", "comanda_corecta": "" },
-            { "id": "s8_5", "cerinta": "Copiază toate fișierele care au extensia .log sau .txt folosind pattern potrivit.", "comanda_corecta": "" }
+            {
+              "id": "s8_1",
+              "cerinta": "Listează fișierele care se termină în .txt și au o cifră între 1 și 5 înainte de extensie.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s8_2",
+              "cerinta": "Listează fișierele care încep cu o literă între a și f.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s8_3",
+              "cerinta": "Listează fișierele care conțin exact un caracter între două litere (ex: a?c).",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s8_4",
+              "cerinta": "Listează fișierele care conțin caracterul * în nume (folosind escape corect).",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s8_5",
+              "cerinta": "Copiază toate fișierele care au extensia .log sau .txt folosind pattern potrivit.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 9,
           "titlu": "Pipe și procesare simplă",
-          "concepte": ["|", "grep", "combinații cu ls"],
+          "lectie": {
+            "titlu": "Pipe și procesare simplă",
+            "descriere": "Pipe-ul trimite output-ul unei comenzi ca input pentru alta, permițând combinarea comenzilor.",
+            "concepte": [
+              {
+                "nume": "|",
+                "explicatie": "Leagă două comenzi."
+              },
+              {
+                "nume": "grep",
+                "explicatie": "Filtrează linii după text."
+              },
+              {
+                "nume": "wc -l",
+                "explicatie": "Numără linii."
+              },
+              {
+                "nume": "sort",
+                "explicatie": "Sortează output-ul."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls | grep config",
+                "explicatie": "Afișează fișierele care conțin config."
+              },
+              {
+                "comanda": "grep /bin/bash /etc/passwd",
+                "explicatie": "Filtrează userii cu /bin/bash."
+              },
+              {
+                "comanda": "ls *.txt | wc -l",
+                "explicatie": "Numără fișiere .txt."
+              },
+              {
+                "comanda": "sort /etc/passwd",
+                "explicatie": "Sortează alfabetic."
+              }
+            ],
+            "retine": "Pipe-ul este cheia pentru a construi comenzi puternice din pași mici."
+          },
+          "concepte": [
+            "|",
+            "grep",
+            "combinații cu ls"
+          ],
           "exercitii": [
-            { "id": "s9_1", "cerinta": "Afișează doar fișierele din directorul curent care conțin cuvântul „config”.", "comanda_corecta": "" },
-            { "id": "s9_2", "cerinta": "Afișează doar utilizatorii din /etc/passwd care folosesc /bin/bash.", "comanda_corecta": "" },
-            { "id": "s9_3", "cerinta": "Numără câte fișiere .txt există în directorul curent.", "comanda_corecta": "" },
-            { "id": "s9_4", "cerinta": "Afișează ultimele 5 linii dintr-un fișier care conțin cuvântul „error”.", "comanda_corecta": "" },
-            { "id": "s9_5", "cerinta": "Sortează lista utilizatorilor din /etc/passwd alfabetic.", "comanda_corecta": "" }
+            {
+              "id": "s9_1",
+              "cerinta": "Afișează doar fișierele din directorul curent care conțin cuvântul „config”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s9_2",
+              "cerinta": "Afișează doar utilizatorii din /etc/passwd care folosesc /bin/bash.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s9_3",
+              "cerinta": "Numără câte fișiere .txt există în directorul curent.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s9_4",
+              "cerinta": "Afișează ultimele 5 linii dintr-un fișier care conțin cuvântul „error”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s9_5",
+              "cerinta": "Sortează lista utilizatorilor din /etc/passwd alfabetic.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 10,
           "titlu": "Stream-uri",
-          "concepte": ["STDIN", "STDOUT", "STDERR", "2>", "2>&1"],
+          "lectie": {
+            "titlu": "Stream-uri: STDIN, STDOUT, STDERR",
+            "descriere": "Comenzile Linux comunică prin fluxuri standard: intrare, ieșire normală și ieșire de eroare.",
+            "concepte": [
+              {
+                "nume": "STDIN",
+                "explicatie": "Datele de intrare."
+              },
+              {
+                "nume": "STDOUT",
+                "explicatie": "Rezultatul normal al comenzii."
+              },
+              {
+                "nume": "STDERR",
+                "explicatie": "Mesajele de eroare."
+              },
+              {
+                "nume": "2>&1",
+                "explicatie": "Combină STDERR cu STDOUT."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls > output.txt",
+                "explicatie": "Redirecționează STDOUT."
+              },
+              {
+                "comanda": "ls /inexistent 2> errors.txt",
+                "explicatie": "Redirecționează STDERR."
+              },
+              {
+                "comanda": "cmd > out.txt 2> err.txt",
+                "explicatie": "Separă output și erori."
+              },
+              {
+                "comanda": "cmd > all.txt 2>&1",
+                "explicatie": "Combină output și erori."
+              }
+            ],
+            "retine": "1 înseamnă STDOUT, 2 înseamnă STDERR."
+          },
+          "concepte": [
+            "STDIN",
+            "STDOUT",
+            "STDERR",
+            "2>",
+            "2>&1"
+          ],
           "exercitii": [
-            { "id": "s10_1", "cerinta": "Execută o comandă invalidă și redirecționează eroarea într-un fișier errors.txt.", "comanda_corecta": "" },
-            { "id": "s10_2", "cerinta": "Redirecționează output-ul valid într-un fișier output.txt.", "comanda_corecta": "" },
-            { "id": "s10_3", "cerinta": "Redirecționează STDOUT într-un fișier și STDERR într-un alt fișier.", "comanda_corecta": "" },
-            { "id": "s10_4", "cerinta": "Redirecționează atât STDOUT cât și STDERR într-un singur fișier.", "comanda_corecta": "" },
-            { "id": "s10_5", "cerinta": "Execută o comandă și afișează doar erorile generate de aceasta.", "comanda_corecta": "" }
+            {
+              "id": "s10_1",
+              "cerinta": "Execută o comandă invalidă și redirecționează eroarea într-un fișier errors.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s10_2",
+              "cerinta": "Redirecționează output-ul valid într-un fișier output.txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s10_3",
+              "cerinta": "Redirecționează STDOUT într-un fișier și STDERR într-un alt fișier.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s10_4",
+              "cerinta": "Redirecționează atât STDOUT cât și STDERR într-un singur fișier.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s10_5",
+              "cerinta": "Execută o comandă și afișează doar erorile generate de aceasta.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -150,49 +787,295 @@
         {
           "id_skill": 11,
           "titlu": "Introducere în Bash",
-          "concepte": ["Shebang", "chmod +x", "rulare script"],
+          "lectie": {
+            "titlu": "Introducere în Bash",
+            "descriere": "Bash permite automatizarea comenzilor prin scripturi reutilizabile.",
+            "concepte": [
+              {
+                "nume": "shebang",
+                "explicatie": "Prima linie care indică interpretorul, de ex. #!/bin/bash."
+              },
+              {
+                "nume": "chmod +x",
+                "explicatie": "Face scriptul executabil."
+              },
+              {
+                "nume": "./script.sh",
+                "explicatie": "Rulează scriptul din directorul curent."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "echo 'Hello Linux' > hello.sh",
+                "explicatie": "Creează un script simplu."
+              },
+              {
+                "comanda": "chmod +x hello.sh",
+                "explicatie": "Îl face executabil."
+              },
+              {
+                "comanda": "./hello.sh",
+                "explicatie": "Rulează scriptul."
+              }
+            ],
+            "retine": "Un script Bash începe de obicei cu #!/bin/bash."
+          },
+          "concepte": [
+            "Shebang",
+            "chmod +x",
+            "rulare script"
+          ],
           "exercitii": [
-            { "id": "s11_1", "cerinta": "Creează un script numit hello.sh care afișează mesajul „Hello Linux”.", "comanda_corecta": "" },
-            { "id": "s11_2", "cerinta": "Adaugă linia shebang corectă pentru Bash într-un script nou.", "comanda_corecta": "" },
-            { "id": "s11_3", "cerinta": "Fă scriptul hello.sh executabil.", "comanda_corecta": "" },
-            { "id": "s11_4", "cerinta": "Rulează scriptul folosind ./.", "comanda_corecta": "" },
-            { "id": "s11_5", "cerinta": "Creează un script care afișează data curentă și hostname-ul sistemului.", "comanda_corecta": "" }
+            {
+              "id": "s11_1",
+              "cerinta": "Creează un script numit hello.sh care afișează mesajul „Hello Linux”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s11_2",
+              "cerinta": "Adaugă linia shebang corectă pentru Bash într-un script nou.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s11_3",
+              "cerinta": "Fă scriptul hello.sh executabil.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s11_4",
+              "cerinta": "Rulează scriptul folosind ./.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s11_5",
+              "cerinta": "Creează un script care afișează data curentă și hostname-ul sistemului.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 12,
           "titlu": "Variabile",
-          "concepte": ["Declarare", "substituție", "$(command)", "ghilimele"],
+          "lectie": {
+            "titlu": "Variabile în Bash",
+            "descriere": "Variabilele stochează valori temporare care pot fi refolosite în scripturi.",
+            "concepte": [
+              {
+                "nume": "NUME=Alex",
+                "explicatie": "Declarare fără spații în jurul egalului."
+              },
+              {
+                "nume": "$NUME",
+                "explicatie": "Accesarea valorii."
+              },
+              {
+                "nume": "$(command)",
+                "explicatie": "Salvează rezultatul unei comenzi."
+              },
+              {
+                "nume": "\"$VAR\"",
+                "explicatie": "Ghilimelele protejează spațiile."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "NUME=Alex; echo $NUME",
+                "explicatie": "Definește și afișează o variabilă."
+              },
+              {
+                "comanda": "AZI=$(date)",
+                "explicatie": "Salvează data curentă."
+              },
+              {
+                "comanda": "COUNT=$(ls | wc -l)",
+                "explicatie": "Numără fișierele."
+              }
+            ],
+            "retine": "În Bash nu se pun spații în jurul semnului egal la asignare."
+          },
+          "concepte": [
+            "Declarare",
+            "substituție",
+            "$(command)",
+            "ghilimele"
+          ],
           "exercitii": [
-            { "id": "s12_1", "cerinta": "Creează o variabilă NUME și afișează valoarea ei.", "comanda_corecta": "" },
-            { "id": "s12_2", "cerinta": "Creează o variabilă care conține rezultatul comenzii date.", "comanda_corecta": "" },
-            { "id": "s12_3", "cerinta": "Creează un script care afișează mesajul „Salut, X” unde X este valoarea unei variabile.", "comanda_corecta": "" },
-            { "id": "s12_4", "cerinta": "Creează o variabilă care stochează numărul de fișiere din directorul curent.", "comanda_corecta": "" },
-            { "id": "s12_5", "cerinta": "Creează un script care primește un argument și îl salvează într-o variabilă, apoi îl afișează.", "comanda_corecta": "" }
+            {
+              "id": "s12_1",
+              "cerinta": "Creează o variabilă NUME și afișează valoarea ei.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s12_2",
+              "cerinta": "Creează o variabilă care conține rezultatul comenzii date.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s12_3",
+              "cerinta": "Creează un script care afișează mesajul „Salut, X” unde X este valoarea unei variabile.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s12_4",
+              "cerinta": "Creează o variabilă care stochează numărul de fișiere din directorul curent.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s12_5",
+              "cerinta": "Creează un script care primește un argument și îl salvează într-o variabilă, apoi îl afișează.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 13,
           "titlu": "Exit status",
-          "concepte": ["$?", "exit"],
+          "lectie": {
+            "titlu": "Exit status",
+            "descriere": "Fiecare comandă returnează un cod de ieșire care indică succesul sau eroarea.",
+            "concepte": [
+              {
+                "nume": "$?",
+                "explicatie": "Codul ultimei comenzi."
+              },
+              {
+                "nume": "0",
+                "explicatie": "Succes."
+              },
+              {
+                "nume": "1+",
+                "explicatie": "Eroare."
+              },
+              {
+                "nume": "exit",
+                "explicatie": "Închide scriptul cu un cod specific."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ls; echo $?",
+                "explicatie": "Afișează codul comenzii ls."
+              },
+              {
+                "comanda": "exit 0",
+                "explicatie": "Returnează succes."
+              },
+              {
+                "comanda": "exit 1",
+                "explicatie": "Returnează eroare."
+              }
+            ],
+            "retine": "În Linux, 0 înseamnă succes; orice alt cod indică o problemă."
+          },
+          "concepte": [
+            "$?",
+            "exit"
+          ],
           "exercitii": [
-            { "id": "s13_1", "cerinta": "Execută o comandă și afișează codul ei de ieșire.", "comanda_corecta": "" },
-            { "id": "s13_2", "cerinta": "Creează un script care returnează explicit codul 0.", "comanda_corecta": "" },
-            { "id": "s13_3", "cerinta": "Creează un script care returnează codul 1.", "comanda_corecta": "" },
-            { "id": "s13_4", "cerinta": "Execută comanda cat /etc/shadow și afișează un mesaj diferit în funcție de codul de ieșire.", "comanda_corecta": "" },
-            { "id": "s13_5", "cerinta": "Creează un script care verifică dacă un fișier există și returnează 0 dacă există și 1 dacă nu.", "comanda_corecta": "" }
+            {
+              "id": "s13_1",
+              "cerinta": "Execută o comandă și afișează codul ei de ieșire.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s13_2",
+              "cerinta": "Creează un script care returnează explicit codul 0.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s13_3",
+              "cerinta": "Creează un script care returnează codul 1.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s13_4",
+              "cerinta": "Execută comanda cat /etc/shadow și afișează un mesaj diferit în funcție de codul de ieșire.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s13_5",
+              "cerinta": "Creează un script care verifică dacă un fișier există și returnează 0 dacă există și 1 dacă nu.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 14,
           "titlu": "Structuri alternative",
-          "concepte": ["If", "if / elif / else", "teste fișiere", "teste string", "teste numerice"],
+          "lectie": {
+            "titlu": "Structuri alternative",
+            "descriere": "Condițiile permit scripturilor să ia decizii în funcție de fișiere, texte sau numere.",
+            "concepte": [
+              {
+                "nume": "if",
+                "explicatie": "Execută cod condiționat."
+              },
+              {
+                "nume": "elif",
+                "explicatie": "Ramură alternativă."
+              },
+              {
+                "nume": "else",
+                "explicatie": "Caz implicit."
+              },
+              {
+                "nume": "[ -f file ]",
+                "explicatie": "Testează dacă este fișier."
+              },
+              {
+                "nume": "[ -d dir ]",
+                "explicatie": "Testează dacă este director."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "if [ -f file.txt ]; then echo exista; fi",
+                "explicatie": "Verifică existența unui fișier."
+              },
+              {
+                "comanda": "if [ $a -gt $b ]; then echo mai mare; fi",
+                "explicatie": "Compară numere."
+              },
+              {
+                "comanda": "if [ -z \"$1\" ]; then echo gol; fi",
+                "explicatie": "Verifică argument gol."
+              }
+            ],
+            "retine": "Condițiile fac scripturile adaptabile."
+          },
+          "concepte": [
+            "If",
+            "if / elif / else",
+            "teste fișiere",
+            "teste string",
+            "teste numerice"
+          ],
           "exercitii": [
-            { "id": "s14_1", "cerinta": "Creează un script care verifică dacă un fișier există.", "comanda_corecta": "" },
-            { "id": "s14_2", "cerinta": "Creează un script care verifică dacă un argument este un director.", "comanda_corecta": "" },
-            { "id": "s14_3", "cerinta": "Creează un script care compară două numere și afișează care este mai mare.", "comanda_corecta": "" },
-            { "id": "s14_4", "cerinta": "Creează un script care verifică dacă un argument este gol.", "comanda_corecta": "" },
-            { "id": "s14_5", "cerinta": "Creează un script care primește un număr și afișează dacă este pozitiv, negativ sau zero.", "comanda_corecta": "" }
+            {
+              "id": "s14_1",
+              "cerinta": "Creează un script care verifică dacă un fișier există.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s14_2",
+              "cerinta": "Creează un script care verifică dacă un argument este un director.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s14_3",
+              "cerinta": "Creează un script care compară două numere și afișează care este mai mare.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s14_4",
+              "cerinta": "Creează un script care verifică dacă un argument este gol.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s14_5",
+              "cerinta": "Creează un script care primește un număr și afișează dacă este pozitiv, negativ sau zero.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -209,85 +1092,476 @@
         {
           "id_skill": 15,
           "titlu": "Buclă for",
+          "lectie": {
+            "titlu": "Bucla for",
+            "descriere": "Bucla for repetă o acțiune pentru fiecare element dintr-o listă.",
+            "concepte": [
+              {
+                "nume": "for",
+                "explicatie": "Începe o buclă."
+              },
+              {
+                "nume": "in",
+                "explicatie": "Definește lista."
+              },
+              {
+                "nume": "do/done",
+                "explicatie": "Marchează blocul executat."
+              },
+              {
+                "nume": "$item",
+                "explicatie": "Elementul curent."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "for i in {1..10}; do echo $i; done",
+                "explicatie": "Afișează numerele 1-10."
+              },
+              {
+                "comanda": "for f in *.txt; do echo $f; done",
+                "explicatie": "Parcurge fișiere .txt."
+              },
+              {
+                "comanda": "for f in *; do du -h \"$f\"; done",
+                "explicatie": "Afișează dimensiuni."
+              }
+            ],
+            "retine": "for este potrivit când știi lista de elemente de parcurs."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s15_1", "cerinta": "Scrie un script care afișează numerele de la 1 la 10 folosind for.", "comanda_corecta": "" },
-            { "id": "s15_2", "cerinta": "Scrie un script care afișează toate fișierele din directorul curent folosind o buclă for.", "comanda_corecta": "" },
-            { "id": "s15_3", "cerinta": "Scrie un script care afișează doar fișierele .txt din directorul curent.", "comanda_corecta": "" },
-            { "id": "s15_4", "cerinta": "Scrie un script care redenumește toate fișierele .log adăugând prefixul backup-.", "comanda_corecta": "" },
-            { "id": "s15_5", "cerinta": "Scrie un script care afișează dimensiunea fiecărui fișier dintr-un director dat ca argument.", "comanda_corecta": "" }
+            {
+              "id": "s15_1",
+              "cerinta": "Scrie un script care afișează numerele de la 1 la 10 folosind for.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s15_2",
+              "cerinta": "Scrie un script care afișează toate fișierele din directorul curent folosind o buclă for.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s15_3",
+              "cerinta": "Scrie un script care afișează doar fișierele .txt din directorul curent.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s15_4",
+              "cerinta": "Scrie un script care redenumește toate fișierele .log adăugând prefixul backup-.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s15_5",
+              "cerinta": "Scrie un script care afișează dimensiunea fiecărui fișier dintr-un director dat ca argument.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 16,
           "titlu": "Buclă while",
+          "lectie": {
+            "titlu": "Bucla while",
+            "descriere": "Bucla while repetă o acțiune cât timp o condiție este adevărată.",
+            "concepte": [
+              {
+                "nume": "while",
+                "explicatie": "Repetă cât condiția este adevărată."
+              },
+              {
+                "nume": "read",
+                "explicatie": "Citește input."
+              },
+              {
+                "nume": "done",
+                "explicatie": "Închide bucla."
+              },
+              {
+                "nume": "break",
+                "explicatie": "Poate opri bucla."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "i=1; while [ $i -le 5 ]; do echo $i; i=$((i+1)); done",
+                "explicatie": "Numără 1-5."
+              },
+              {
+                "comanda": "while read line; do echo \"$line\"; done < /etc/passwd",
+                "explicatie": "Citește fișier linie cu linie."
+              }
+            ],
+            "retine": "while este potrivit când nu știi dinainte de câte ori vei repeta."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s16_1", "cerinta": "Scrie un script care afișează numerele de la 1 la 5 folosind while.", "comanda_corecta": "" },
-            { "id": "s16_2", "cerinta": "Scrie un script care citește fișierul /etc/passwd linie cu linie și afișează fiecare linie.", "comanda_corecta": "" },
-            { "id": "s16_3", "cerinta": "Scrie un script care cere utilizatorului un input până când acesta introduce „exit”.", "comanda_corecta": "" },
-            { "id": "s16_4", "cerinta": "Scrie un script care citește un fișier și numerotează fiecare linie.", "comanda_corecta": "" },
-            { "id": "s16_5", "cerinta": "Scrie un script care citește o listă de utilizatori dintr-un fișier și afișează fiecare utilizator.", "comanda_corecta": "" }
+            {
+              "id": "s16_1",
+              "cerinta": "Scrie un script care afișează numerele de la 1 la 5 folosind while.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s16_2",
+              "cerinta": "Scrie un script care citește fișierul /etc/passwd linie cu linie și afișează fiecare linie.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s16_3",
+              "cerinta": "Scrie un script care cere utilizatorului un input până când acesta introduce „exit”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s16_4",
+              "cerinta": "Scrie un script care citește un fișier și numerotează fiecare linie.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s16_5",
+              "cerinta": "Scrie un script care citește o listă de utilizatori dintr-un fișier și afișează fiecare utilizator.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 17,
           "titlu": "break / continue",
+          "lectie": {
+            "titlu": "break și continue",
+            "descriere": "break și continue controlează fluxul unei bucle: opresc bucla sau sar peste o iterație.",
+            "concepte": [
+              {
+                "nume": "break",
+                "explicatie": "Oprește complet bucla."
+              },
+              {
+                "nume": "continue",
+                "explicatie": "Sare la următoarea iterație."
+              },
+              {
+                "nume": "condiții",
+                "explicatie": "Decid când se aplică break/continue."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "for i in {1..10}; do [ $i -eq 5 ] && break; echo $i; done",
+                "explicatie": "Se oprește la 5."
+              },
+              {
+                "comanda": "for i in {1..10}; do [ $((i%2)) -ne 0 ] && continue; echo $i; done",
+                "explicatie": "Afișează pare."
+              }
+            ],
+            "retine": "break oprește, continue sare peste pasul curent."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s17_1", "cerinta": "Scrie un script care afișează numerele 1–10, dar se oprește când ajunge la 5.", "comanda_corecta": "" },
-            { "id": "s17_2", "cerinta": "Scrie un script care afișează doar numerele pare din intervalul 1–10 folosind continue.", "comanda_corecta": "" },
-            { "id": "s17_3", "cerinta": "Scrie un script care caută un fișier într-o listă și oprește căutarea când îl găsește.", "comanda_corecta": "" },
-            { "id": "s17_4", "cerinta": "Scrie un script care parcurge fișierele dintr-un director și sare peste cele care nu au extensia .txt.", "comanda_corecta": "" },
-            { "id": "s17_5", "cerinta": "Scrie un script care citește linii dintr-un fișier și se oprește când întâlnește o linie goală.", "comanda_corecta": "" }
+            {
+              "id": "s17_1",
+              "cerinta": "Scrie un script care afișează numerele 1–10, dar se oprește când ajunge la 5.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s17_2",
+              "cerinta": "Scrie un script care afișează doar numerele pare din intervalul 1–10 folosind continue.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s17_3",
+              "cerinta": "Scrie un script care caută un fișier într-o listă și oprește căutarea când îl găsește.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s17_4",
+              "cerinta": "Scrie un script care parcurge fișierele dintr-un director și sare peste cele care nu au extensia .txt.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s17_5",
+              "cerinta": "Scrie un script care citește linii dintr-un fișier și se oprește când întâlnește o linie goală.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 18,
           "titlu": "Case",
+          "lectie": {
+            "titlu": "Case în Bash",
+            "descriere": "case este util când ai mai multe variante posibile pentru aceeași valoare.",
+            "concepte": [
+              {
+                "nume": "case",
+                "explicatie": "Începe structura."
+              },
+              {
+                "nume": "pattern)",
+                "explicatie": "Definește o variantă."
+              },
+              {
+                "nume": ";;",
+                "explicatie": "Încheie o variantă."
+              },
+              {
+                "nume": "*)",
+                "explicatie": "Caz implicit."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "case $1 in start) echo Start;; stop) echo Stop;; *) echo Invalid;; esac",
+                "explicatie": "Tratează start/stop."
+              },
+              {
+                "comanda": "case $zi in sambata|duminica) echo weekend;; *) echo lucratoare;; esac",
+                "explicatie": "Verifică zi."
+              }
+            ],
+            "retine": "case este mai curat decât multe if/elif când ai opțiuni multiple."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s18_1", "cerinta": "Scrie un script care primește argumentul start sau stop și afișează un mesaj corespunzător.", "comanda_corecta": "" },
-            { "id": "s18_2", "cerinta": "Scrie un script care primește o zi a săptămânii și afișează dacă este zi lucrătoare sau weekend.", "comanda_corecta": "" },
-            { "id": "s18_3", "cerinta": "Scrie un meniu cu 3 opțiuni: afișare dată, uptime, utilizatori logați.", "comanda_corecta": "" },
-            { "id": "s18_4", "cerinta": "Scrie un script care validează un input numeric între 1 și 3.", "comanda_corecta": "" },
-            { "id": "s18_5", "cerinta": "Scrie un script care primește extensia unui fișier și afișează un mesaj diferit pentru .txt, .log, .sh.", "comanda_corecta": "" }
+            {
+              "id": "s18_1",
+              "cerinta": "Scrie un script care primește argumentul start sau stop și afișează un mesaj corespunzător.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s18_2",
+              "cerinta": "Scrie un script care primește o zi a săptămânii și afișează dacă este zi lucrătoare sau weekend.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s18_3",
+              "cerinta": "Scrie un meniu cu 3 opțiuni: afișare dată, uptime, utilizatori logați.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s18_4",
+              "cerinta": "Scrie un script care validează un input numeric între 1 și 3.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s18_5",
+              "cerinta": "Scrie un script care primește extensia unui fișier și afișează un mesaj diferit pentru .txt, .log, .sh.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 19,
           "titlu": "Parametri script",
-          "concepte": ["$0", "$1", "$@"],
+          "lectie": {
+            "titlu": "Parametri script",
+            "descriere": "Scripturile pot primi argumente din linia de comandă, ceea ce le face reutilizabile.",
+            "concepte": [
+              {
+                "nume": "$0",
+                "explicatie": "Numele scriptului."
+              },
+              {
+                "nume": "$1",
+                "explicatie": "Primul argument."
+              },
+              {
+                "nume": "$@",
+                "explicatie": "Toate argumentele."
+              },
+              {
+                "nume": "$#",
+                "explicatie": "Numărul de argumente."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "echo $0",
+                "explicatie": "Afișează numele scriptului."
+              },
+              {
+                "comanda": "echo $1",
+                "explicatie": "Afișează primul argument."
+              },
+              {
+                "comanda": "echo $#",
+                "explicatie": "Afișează numărul argumentelor."
+              },
+              {
+                "comanda": "for arg in \"$@\"; do echo $arg; done",
+                "explicatie": "Parcurge toate argumentele."
+              }
+            ],
+            "retine": "Folosește ghilimele: \"$@\" păstrează argumentele corect."
+          },
+          "concepte": [
+            "$0",
+            "$1",
+            "$@"
+          ],
           "exercitii": [
-            { "id": "s19_1", "cerinta": "Scrie un script care afișează numele scriptului folosind $0.", "comanda_corecta": "" },
-            { "id": "s19_2", "cerinta": "Scrie un script care afișează primul argument primit.", "comanda_corecta": "" },
-            { "id": "s19_3", "cerinta": "Scrie un script care afișează toate argumentele primite.", "comanda_corecta": "" },
-            { "id": "s19_4", "cerinta": "Scrie un script care verifică dacă au fost furnizate cel puțin 2 argumente.", "comanda_corecta": "" },
-            { "id": "s19_5", "cerinta": "Scrie un script care afișează numărul de argumente primite.", "comanda_corecta": "" }
+            {
+              "id": "s19_1",
+              "cerinta": "Scrie un script care afișează numele scriptului folosind $0.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s19_2",
+              "cerinta": "Scrie un script care afișează primul argument primit.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s19_3",
+              "cerinta": "Scrie un script care afișează toate argumentele primite.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s19_4",
+              "cerinta": "Scrie un script care verifică dacă au fost furnizate cel puțin 2 argumente.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s19_5",
+              "cerinta": "Scrie un script care afișează numărul de argumente primite.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 20,
           "titlu": "Funcții",
-          "concepte": ["Definire", "parametri", "local vs global"],
+          "lectie": {
+            "titlu": "Funcții în Bash",
+            "descriere": "Funcțiile grupează cod reutilizabil și fac scripturile mai clare.",
+            "concepte": [
+              {
+                "nume": "functie()",
+                "explicatie": "Definește o funcție."
+              },
+              {
+                "nume": "$1",
+                "explicatie": "Primul parametru al funcției."
+              },
+              {
+                "nume": "local",
+                "explicatie": "Variabilă locală funcției."
+              },
+              {
+                "nume": "return",
+                "explicatie": "Returnează un cod de stare."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "salut(){ echo 'Funcție apelată'; }",
+                "explicatie": "Definește funcție."
+              },
+              {
+                "comanda": "salut",
+                "explicatie": "Apelează funcția."
+              },
+              {
+                "comanda": "sum(){ echo $(($1+$2)); }",
+                "explicatie": "Funcție cu parametri."
+              }
+            ],
+            "retine": "Funcțiile reduc duplicarea și organizează scripturile."
+          },
+          "concepte": [
+            "Definire",
+            "parametri",
+            "local vs global"
+          ],
           "exercitii": [
-            { "id": "s20_1", "cerinta": "Scrie o funcție care afișează mesajul „Funcție apelată”.", "comanda_corecta": "" },
-            { "id": "s20_2", "cerinta": "Scrie o funcție care primește un parametru și îl afișează.", "comanda_corecta": "" },
-            { "id": "s20_3", "cerinta": "Scrie o funcție care calculează suma a două numere.", "comanda_corecta": "" },
-            { "id": "s20_4", "cerinta": "Scrie o funcție care afișează numărul de fișiere dintr-un director primit ca argument.", "comanda_corecta": "" },
-            { "id": "s20_5", "cerinta": "Scrie o funcție care folosește o variabilă locală și demonstrează diferența față de una globală.", "comanda_corecta": "" }
+            {
+              "id": "s20_1",
+              "cerinta": "Scrie o funcție care afișează mesajul „Funcție apelată”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s20_2",
+              "cerinta": "Scrie o funcție care primește un parametru și îl afișează.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s20_3",
+              "cerinta": "Scrie o funcție care calculează suma a două numere.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s20_4",
+              "cerinta": "Scrie o funcție care afișează numărul de fișiere dintr-un director primit ca argument.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s20_5",
+              "cerinta": "Scrie o funcție care folosește o variabilă locală și demonstrează diferența față de una globală.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 21,
           "titlu": "&& și ||",
+          "lectie": {
+            "titlu": "Operatorii && și ||",
+            "descriere": "Acești operatori permit execuția condiționată a comenzilor pe baza succesului sau eșecului.",
+            "concepte": [
+              {
+                "nume": "&&",
+                "explicatie": "Execută următoarea comandă doar dacă prima reușește."
+              },
+              {
+                "nume": "||",
+                "explicatie": "Execută următoarea comandă doar dacă prima eșuează."
+              },
+              {
+                "nume": "exit status",
+                "explicatie": "Baza deciziei pentru && și ||."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "mkdir test && echo Succes",
+                "explicatie": "Afișează Succes doar dacă mkdir reușește."
+              },
+              {
+                "comanda": "cat lipsa.txt || echo Eroare",
+                "explicatie": "Afișează Eroare dacă fișierul lipsește."
+              },
+              {
+                "comanda": "[ -d test ] || mkdir test",
+                "explicatie": "Creează directorul doar dacă nu există."
+              }
+            ],
+            "retine": "&& înseamnă dacă a mers, || înseamnă dacă nu a mers."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s21_1", "cerinta": "Execută o comandă și afișează „Succes” doar dacă aceasta reușește.", "comanda_corecta": "" },
-            { "id": "s21_2", "cerinta": "Execută o comandă și afișează „Eroare” dacă aceasta eșuează.", "comanda_corecta": "" },
-            { "id": "s21_3", "cerinta": "Creează un script care creează un director doar dacă acesta nu există.", "comanda_corecta": "" },
-            { "id": "s21_4", "cerinta": "Scrie un script care verifică existența unui fișier și îl creează dacă nu există.", "comanda_corecta": "" },
-            { "id": "s21_5", "cerinta": "Creează un lanț de comenzi unde a doua se execută doar dacă prima are succes.", "comanda_corecta": "" }
+            {
+              "id": "s21_1",
+              "cerinta": "Execută o comandă și afișează „Succes” doar dacă aceasta reușește.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s21_2",
+              "cerinta": "Execută o comandă și afișează „Eroare” dacă aceasta eșuează.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s21_3",
+              "cerinta": "Creează un script care creează un director doar dacă acesta nu există.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s21_4",
+              "cerinta": "Scrie un script care verifică existența unui fișier și îl creează dacă nu există.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s21_5",
+              "cerinta": "Creează un lanț de comenzi unde a doua se execută doar dacă prima are succes.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -304,61 +1578,370 @@
         {
           "id_skill": 22,
           "titlu": "Logging",
-          "concepte": ["Logger", "syslog"],
+          "lectie": {
+            "titlu": "Logging",
+            "descriere": "Logging-ul ajută la urmărirea acțiunilor unui script și la diagnosticarea problemelor.",
+            "concepte": [
+              {
+                "nume": "logger",
+                "explicatie": "Trimite mesaje în syslog."
+              },
+              {
+                "nume": "syslog",
+                "explicatie": "Sistem centralizat de logare."
+              },
+              {
+                "nume": "tag",
+                "explicatie": "Etichetă pentru identificarea mesajelor."
+              },
+              {
+                "nume": "PID",
+                "explicatie": "Identificatorul procesului curent."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "logger 'Mesaj test'",
+                "explicatie": "Trimite un mesaj simplu."
+              },
+              {
+                "comanda": "logger -p user.info 'Info'",
+                "explicatie": "Trimite cu facility/nivel."
+              },
+              {
+                "comanda": "logger -t scriptul_meu 'Start'",
+                "explicatie": "Adaugă tag."
+              }
+            ],
+            "retine": "Un script bun lasă urme clare în loguri."
+          },
+          "concepte": [
+            "Logger",
+            "syslog"
+          ],
           "exercitii": [
-            { "id": "s22_1", "cerinta": "Scrie un script care generează un număr random și îl afișează pe ecran.", "comanda_corecta": "" },
-            { "id": "s22_2", "cerinta": "Modifică scriptul astfel încât să trimită numărul random și în syslog folosind logger.", "comanda_corecta": "" },
-            { "id": "s22_3", "cerinta": "Scrie un script care loghează un mesaj folosind facility user și nivel info.", "comanda_corecta": "" },
-            { "id": "s22_4", "cerinta": "Creează o funcție log_message care primește un text și îl trimite în syslog.", "comanda_corecta": "" },
-            { "id": "s22_5", "cerinta": "Modifică scriptul astfel încât fiecare mesaj din syslog să conțină PID-ul scriptului și un tag personalizat.", "comanda_corecta": "" }
+            {
+              "id": "s22_1",
+              "cerinta": "Scrie un script care generează un număr random și îl afișează pe ecran.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s22_2",
+              "cerinta": "Modifică scriptul astfel încât să trimită numărul random și în syslog folosind logger.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s22_3",
+              "cerinta": "Scrie un script care loghează un mesaj folosind facility user și nivel info.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s22_4",
+              "cerinta": "Creează o funcție log_message care primește un text și îl trimite în syslog.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s22_5",
+              "cerinta": "Modifică scriptul astfel încât fiecare mesaj din syslog să conțină PID-ul scriptului și un tag personalizat.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 23,
           "titlu": "Debugging",
-          "concepte": ["-x", "-e", "set -x", "PS4"],
+          "lectie": {
+            "titlu": "Debugging în Bash",
+            "descriere": "Debugging-ul te ajută să vezi ce execută scriptul și unde apare eroarea.",
+            "concepte": [
+              {
+                "nume": "set -x",
+                "explicatie": "Afișează comenzile înainte de execuție."
+              },
+              {
+                "nume": "set -e",
+                "explicatie": "Oprește scriptul la prima eroare."
+              },
+              {
+                "nume": "bash -x",
+                "explicatie": "Rulează scriptul în mod debug."
+              },
+              {
+                "nume": "PS4",
+                "explicatie": "Customizează prefixul debug."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "bash -x script.sh",
+                "explicatie": "Rulează cu debug."
+              },
+              {
+                "comanda": "set -e",
+                "explicatie": "Oprește la eroare."
+              },
+              {
+                "comanda": "set +e",
+                "explicatie": "Permite continuarea după eroare."
+              },
+              {
+                "comanda": "PS4='+$LINENO: '",
+                "explicatie": "Afișează linia în debug."
+              }
+            ],
+            "retine": "Debugging-ul face erorile vizibile."
+          },
+          "concepte": [
+            "-x",
+            "-e",
+            "set -x",
+            "PS4"
+          ],
           "exercitii": [
-            { "id": "s23_1", "cerinta": "Scrie un script care execută trei comenzi ls, unde a doua comandă generează eroare.", "comanda_corecta": "" },
-            { "id": "s23_2", "cerinta": "Activează opțiunea care oprește execuția scriptului la prima eroare.", "comanda_corecta": "" },
-            { "id": "s23_3", "cerinta": "Activează afișarea comenzilor înainte de execuție.", "comanda_corecta": "" },
-            { "id": "s23_4", "cerinta": "Modifică scriptul astfel încât execuția să continue chiar dacă apare o eroare.", "comanda_corecta": "" },
-            { "id": "s23_5", "cerinta": "Configurează variabila PS4 pentru a afișa numărul liniei la debugging.", "comanda_corecta": "" }
+            {
+              "id": "s23_1",
+              "cerinta": "Scrie un script care execută trei comenzi ls, unde a doua comandă generează eroare.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s23_2",
+              "cerinta": "Activează opțiunea care oprește execuția scriptului la prima eroare.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s23_3",
+              "cerinta": "Activează afișarea comenzilor înainte de execuție.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s23_4",
+              "cerinta": "Modifică scriptul astfel încât execuția să continue chiar dacă apare o eroare.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s23_5",
+              "cerinta": "Configurează variabila PS4 pentru a afișa numărul liniei la debugging.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 24,
           "titlu": "Cron",
+          "lectie": {
+            "titlu": "Cron",
+            "descriere": "Cron programează comenzi sau scripturi să ruleze automat la anumite intervale.",
+            "concepte": [
+              {
+                "nume": "* * * * *",
+                "explicatie": "Formatul minut-oră-zi-lună-zi_săptămână."
+              },
+              {
+                "nume": "crontab -e",
+                "explicatie": "Editează joburile cron."
+              },
+              {
+                "nume": "redirectare",
+                "explicatie": "Salvează output-ul jobului."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "* * * * * /path/script.sh",
+                "explicatie": "Rulează în fiecare minut."
+              },
+              {
+                "comanda": "*/5 * * * * /path/script.sh",
+                "explicatie": "Rulează la 5 minute."
+              },
+              {
+                "comanda": "30 2 * * * /path/script.sh",
+                "explicatie": "Rulează zilnic la 02:30."
+              }
+            ],
+            "retine": "Cron este automatizare bazată pe timp."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s24_1", "cerinta": "Scrie o intrare cron care execută un script în fiecare minut.", "comanda_corecta": "" },
-            { "id": "s24_2", "cerinta": "Scrie o intrare cron care rulează un script la fiecare 5 minute.", "comanda_corecta": "" },
-            { "id": "s24_3", "cerinta": "Programează un script să ruleze zilnic la ora 02:30.", "comanda_corecta": "" },
-            { "id": "s24_4", "cerinta": "Redirecționează output-ul unui job cron într-un fișier log.", "comanda_corecta": "" },
-            { "id": "s24_5", "cerinta": "Creează un script și programează-l în cron astfel încât să verifice spațiul pe disc la fiecare 10 minute.", "comanda_corecta": "" }
+            {
+              "id": "s24_1",
+              "cerinta": "Scrie o intrare cron care execută un script în fiecare minut.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s24_2",
+              "cerinta": "Scrie o intrare cron care rulează un script la fiecare 5 minute.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s24_3",
+              "cerinta": "Programează un script să ruleze zilnic la ora 02:30.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s24_4",
+              "cerinta": "Redirecționează output-ul unui job cron într-un fișier log.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s24_5",
+              "cerinta": "Creează un script și programează-l în cron astfel încât să verifice spațiul pe disc la fiecare 10 minute.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 25,
           "titlu": "Procese și job control",
+          "lectie": {
+            "titlu": "Procese și job control",
+            "descriere": "Înveți să vezi, pornești, oprești și controlezi procesele din sistem.",
+            "concepte": [
+              {
+                "nume": "ps",
+                "explicatie": "Afișează procese."
+              },
+              {
+                "nume": "grep",
+                "explicatie": "Filtrează procese."
+              },
+              {
+                "nume": "&",
+                "explicatie": "Pornește în background."
+              },
+              {
+                "nume": "jobs",
+                "explicatie": "Afișează joburi shell."
+              },
+              {
+                "nume": "kill",
+                "explicatie": "Trimite semnal unui proces."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "ps aux | grep ssh",
+                "explicatie": "Caută procese ssh."
+              },
+              {
+                "comanda": "sleep 100 &",
+                "explicatie": "Pornește în background."
+              },
+              {
+                "comanda": "jobs",
+                "explicatie": "Listează joburi."
+              },
+              {
+                "comanda": "kill PID",
+                "explicatie": "Oprește procesul."
+              }
+            ],
+            "retine": "Un proces poate rula foreground sau background."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s25_1", "cerinta": "Afișează toate procesele care conțin cuvântul ssh.", "comanda_corecta": "" },
-            { "id": "s25_2", "cerinta": "Pornește un proces în background.", "comanda_corecta": "" },
-            { "id": "s25_3", "cerinta": "Listează job-urile active din shell-ul curent.", "comanda_corecta": "" },
-            { "id": "s25_4", "cerinta": "Oprește un proces folosind PID-ul lui.", "comanda_corecta": "" },
-            { "id": "s25_5", "cerinta": "Scrie un script care verifică dacă un proces rulează și îl pornește dacă nu rulează.", "comanda_corecta": "" }
+            {
+              "id": "s25_1",
+              "cerinta": "Afișează toate procesele care conțin cuvântul ssh.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s25_2",
+              "cerinta": "Pornește un proces în background.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s25_3",
+              "cerinta": "Listează job-urile active din shell-ul curent.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s25_4",
+              "cerinta": "Oprește un proces folosind PID-ul lui.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s25_5",
+              "cerinta": "Scrie un script care verifică dacă un proces rulează și îl pornește dacă nu rulează.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 26,
           "titlu": "find / locate",
+          "lectie": {
+            "titlu": "find și locate",
+            "descriere": "Aceste comenzi caută fișiere după nume, tip, dimensiune, dată sau alte criterii.",
+            "concepte": [
+              {
+                "nume": "find",
+                "explicatie": "Caută în timp real pe filesystem."
+              },
+              {
+                "nume": "-name",
+                "explicatie": "Filtrează după nume."
+              },
+              {
+                "nume": "-size",
+                "explicatie": "Filtrează după dimensiune."
+              },
+              {
+                "nume": "-mtime",
+                "explicatie": "Filtrează după data modificării."
+              },
+              {
+                "nume": "-exec",
+                "explicatie": "Execută comenzi pe rezultate."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "find /var/log -name '*.log'",
+                "explicatie": "Găsește loguri."
+              },
+              {
+                "comanda": "find . -size +10M",
+                "explicatie": "Fișiere mai mari de 10MB."
+              },
+              {
+                "comanda": "find . -mtime -1",
+                "explicatie": "Modificate în ultimele 24h."
+              },
+              {
+                "comanda": "find . -name '*.tmp' -delete",
+                "explicatie": "Șterge .tmp."
+              }
+            ],
+            "retine": "find este foarte puternic, dar trebuie folosit atent când șterge."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s26_1", "cerinta": "Găsește toate fișierele .log din directorul /var/log.", "comanda_corecta": "" },
-            { "id": "s26_2", "cerinta": "Găsește fișierele mai mari de 10MB într-un director dat.", "comanda_corecta": "" },
-            { "id": "s26_3", "cerinta": "Găsește fișierele modificate în ultimele 24 de ore.", "comanda_corecta": "" },
-            { "id": "s26_4", "cerinta": "Șterge toate fișierele .tmp folosind find.", "comanda_corecta": "" },
-            { "id": "s26_5", "cerinta": "Folosește find pentru a executa o comandă asupra fiecărui fișier .txt găsit.", "comanda_corecta": "" }
+            {
+              "id": "s26_1",
+              "cerinta": "Găsește toate fișierele .log din directorul /var/log.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s26_2",
+              "cerinta": "Găsește fișierele mai mari de 10MB într-un director dat.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s26_3",
+              "cerinta": "Găsește fișierele modificate în ultimele 24 de ore.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s26_4",
+              "cerinta": "Șterge toate fișierele .tmp folosind find.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s26_5",
+              "cerinta": "Folosește find pentru a executa o comandă asupra fiecărui fișier .txt găsit.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -375,49 +1958,305 @@
         {
           "id_skill": 27,
           "titlu": "Boot process",
+          "lectie": {
+            "titlu": "Procesul de boot",
+            "descriere": "Boot process descrie pașii prin care Linux pornește până ajunge la sistemul utilizabil.",
+            "concepte": [
+              {
+                "nume": "systemd",
+                "explicatie": "Manager de init și servicii."
+              },
+              {
+                "nume": "PID 1",
+                "explicatie": "Primul proces al sistemului."
+              },
+              {
+                "nume": "target",
+                "explicatie": "Stare/țintă de boot în systemd."
+              },
+              {
+                "nume": "init",
+                "explicatie": "Procesul care inițializează sistemul."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "systemctl get-default",
+                "explicatie": "Afișează target-ul implicit."
+              },
+              {
+                "comanda": "systemctl list-units --type=target",
+                "explicatie": "Listează target-uri."
+              },
+              {
+                "comanda": "ps -p 1",
+                "explicatie": "Afișează procesul PID 1."
+              },
+              {
+                "comanda": "systemctl isolate multi-user.target",
+                "explicatie": "Schimbă temporar target-ul."
+              }
+            ],
+            "retine": "În sistemele moderne, PID 1 este de obicei systemd."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s27_1", "cerinta": "Afișează target-ul implicit de boot al sistemului.", "comanda_corecta": "" },
-            { "id": "s27_2", "cerinta": "Afișează lista tuturor target-urilor disponibile în sistem.", "comanda_corecta": "" },
-            { "id": "s27_3", "cerinta": "Afișează informații despre procesul PID 1.", "comanda_corecta": "" },
-            { "id": "s27_4", "cerinta": "Identifică ce proces rulează ca init pe sistem.", "comanda_corecta": "" },
-            { "id": "s27_5", "cerinta": "Schimbă temporar sistemul într-un alt target (de exemplu multi-user).", "comanda_corecta": "" }
+            {
+              "id": "s27_1",
+              "cerinta": "Afișează target-ul implicit de boot al sistemului.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s27_2",
+              "cerinta": "Afișează lista tuturor target-urilor disponibile în sistem.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s27_3",
+              "cerinta": "Afișează informații despre procesul PID 1.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s27_4",
+              "cerinta": "Identifică ce proces rulează ca init pe sistem.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s27_5",
+              "cerinta": "Schimbă temporar sistemul într-un alt target (de exemplu multi-user).",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 28,
           "titlu": "Systemctl",
+          "lectie": {
+            "titlu": "Systemctl",
+            "descriere": "systemctl controlează serviciile gestionate de systemd.",
+            "concepte": [
+              {
+                "nume": "status",
+                "explicatie": "Verifică starea serviciului."
+              },
+              {
+                "nume": "start",
+                "explicatie": "Pornește un serviciu."
+              },
+              {
+                "nume": "stop",
+                "explicatie": "Oprește un serviciu."
+              },
+              {
+                "nume": "enable",
+                "explicatie": "Activează pornirea la boot."
+              },
+              {
+                "nume": "list-units",
+                "explicatie": "Listează unități/servicii."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "systemctl status sshd",
+                "explicatie": "Verifică sshd."
+              },
+              {
+                "comanda": "sudo systemctl start httpd",
+                "explicatie": "Pornește httpd."
+              },
+              {
+                "comanda": "sudo systemctl stop httpd",
+                "explicatie": "Oprește httpd."
+              },
+              {
+                "comanda": "sudo systemctl enable httpd",
+                "explicatie": "Activează la boot."
+              }
+            ],
+            "retine": "start pornește acum; enable pornește automat la boot."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s28_1", "cerinta": "Verifică statusul serviciului sshd.", "comanda_corecta": "" },
-            { "id": "s28_2", "cerinta": "Pornește serviciul httpd.", "comanda_corecta": "" },
-            { "id": "s28_3", "cerinta": "Oprește serviciul httpd.", "comanda_corecta": "" },
-            { "id": "s28_4", "cerinta": "Configurează un serviciu să pornească automat la boot.", "comanda_corecta": "" },
-            { "id": "s28_5", "cerinta": "Afișează toate serviciile active din sistem.", "comanda_corecta": "" }
+            {
+              "id": "s28_1",
+              "cerinta": "Verifică statusul serviciului sshd.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s28_2",
+              "cerinta": "Pornește serviciul httpd.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s28_3",
+              "cerinta": "Oprește serviciul httpd.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s28_4",
+              "cerinta": "Configurează un serviciu să pornească automat la boot.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s28_5",
+              "cerinta": "Afișează toate serviciile active din sistem.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 29,
           "titlu": "Journalctl",
+          "lectie": {
+            "titlu": "Journalctl",
+            "descriere": "journalctl citește logurile gestionate de systemd-journald.",
+            "concepte": [
+              {
+                "nume": "-n",
+                "explicatie": "Număr de linii afișate."
+              },
+              {
+                "nume": "-u",
+                "explicatie": "Filtrează după serviciu."
+              },
+              {
+                "nume": "--since",
+                "explicatie": "Filtrează după timp."
+              },
+              {
+                "nume": "-f",
+                "explicatie": "Urmărește logurile în timp real."
+              },
+              {
+                "nume": "-p",
+                "explicatie": "Filtrează după prioritate."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "journalctl -n 20",
+                "explicatie": "Ultimele 20 mesaje."
+              },
+              {
+                "comanda": "journalctl -u sshd",
+                "explicatie": "Logurile sshd."
+              },
+              {
+                "comanda": "journalctl --since '10 minutes ago'",
+                "explicatie": "Loguri recente."
+              },
+              {
+                "comanda": "journalctl -f -u sshd",
+                "explicatie": "Loguri live pentru sshd."
+              }
+            ],
+            "retine": "journalctl este esențial pentru diagnosticarea serviciilor."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s29_1", "cerinta": "Afișează ultimele 20 de mesaje din jurnal.", "comanda_corecta": "" },
-            { "id": "s29_2", "cerinta": "Afișează mesajele generate de serviciul sshd.", "comanda_corecta": "" },
-            { "id": "s29_3", "cerinta": "Afișează log-urile generate în ultimele 10 minute.", "comanda_corecta": "" },
-            { "id": "s29_4", "cerinta": "Afișează doar mesajele de tip „error”.", "comanda_corecta": "" },
-            { "id": "s29_5", "cerinta": "Afișează log-urile în timp real pentru un serviciu.", "comanda_corecta": "" }
+            {
+              "id": "s29_1",
+              "cerinta": "Afișează ultimele 20 de mesaje din jurnal.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s29_2",
+              "cerinta": "Afișează mesajele generate de serviciul sshd.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s29_3",
+              "cerinta": "Afișează log-urile generate în ultimele 10 minute.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s29_4",
+              "cerinta": "Afișează doar mesajele de tip „error”.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s29_5",
+              "cerinta": "Afișează log-urile în timp real pentru un serviciu.",
+              "comanda_corecta": ""
+            }
           ]
         },
         {
           "id_skill": 30,
           "titlu": "logrotate",
+          "lectie": {
+            "titlu": "Logrotate",
+            "descriere": "logrotate gestionează rotația logurilor pentru a preveni ocuparea excesivă a discului.",
+            "concepte": [
+              {
+                "nume": "/etc/logrotate.conf",
+                "explicatie": "Configurația principală."
+              },
+              {
+                "nume": "/etc/logrotate.d/",
+                "explicatie": "Configurații per serviciu."
+              },
+              {
+                "nume": "rotate",
+                "explicatie": "Câte versiuni se păstrează."
+              },
+              {
+                "nume": "compress",
+                "explicatie": "Comprimă logurile vechi."
+              },
+              {
+                "nume": "-d",
+                "explicatie": "Rulează în mod debug/simulare."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "cat /etc/logrotate.conf",
+                "explicatie": "Vezi config principal."
+              },
+              {
+                "comanda": "ls /etc/logrotate.d",
+                "explicatie": "Vezi configuri servicii."
+              },
+              {
+                "comanda": "logrotate -d config",
+                "explicatie": "Testează fără modificări."
+              },
+              {
+                "comanda": "rotate 5",
+                "explicatie": "Păstrează 5 versiuni."
+              }
+            ],
+            "retine": "Logrotate previne creșterea necontrolată a fișierelor log."
+          },
           "concepte": [],
           "exercitii": [
-            { "id": "s30_1", "cerinta": "Identifică fișierul principal de configurare logrotate.", "comanda_corecta": "" },
-            { "id": "s30_2", "cerinta": "Identifică configurația pentru log-urile din /var/log.", "comanda_corecta": "" },
-            { "id": "s30_3", "cerinta": "Creează o configurație simplă logrotate pentru un fișier personalizat.", "comanda_corecta": "" },
-            { "id": "s30_4", "cerinta": "Rulează logrotate manual pentru a testa configurația.", "comanda_corecta": "" },
-            { "id": "s30_5", "cerinta": "Configurează rotația log-urilor astfel încât să păstreze doar ultimele 5 versiuni.", "comanda_corecta": "" }
+            {
+              "id": "s30_1",
+              "cerinta": "Identifică fișierul principal de configurare logrotate.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s30_2",
+              "cerinta": "Identifică configurația pentru log-urile din /var/log.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s30_3",
+              "cerinta": "Creează o configurație simplă logrotate pentru un fișier personalizat.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s30_4",
+              "cerinta": "Rulează logrotate manual pentru a testa configurația.",
+              "comanda_corecta": ""
+            },
+            {
+              "id": "s30_5",
+              "cerinta": "Configurează rotația log-urilor astfel încât să păstreze doar ultimele 5 versiuni.",
+              "comanda_corecta": ""
+            }
           ]
         }
       ],
@@ -434,7 +2273,50 @@
         {
           "id_skill": "proiect_1",
           "titlu": "Script creare utilizatori + parolă random",
-          "concepte": ["Aplicație practică integrată"],
+          "lectie": {
+            "titlu": "Proiect final: utilizatori și parole",
+            "descriere": "Acest proiect integrează administrarea utilizatorilor, grupurilor, parolelor și exportul datelor într-un fișier.",
+            "concepte": [
+              {
+                "nume": "useradd",
+                "explicatie": "Creează utilizatori."
+              },
+              {
+                "nume": "groupadd",
+                "explicatie": "Creează grupuri."
+              },
+              {
+                "nume": "passwd/chpasswd",
+                "explicatie": "Setează parole."
+              },
+              {
+                "nume": "chage",
+                "explicatie": "Forțează schimbarea parolei."
+              },
+              {
+                "nume": "CSV",
+                "explicatie": "Format simplu pentru credențiale."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "sudo groupadd dev",
+                "explicatie": "Creează grup."
+              },
+              {
+                "comanda": "sudo useradd -m -g dev alex",
+                "explicatie": "Creează user în grup."
+              },
+              {
+                "comanda": "echo 'alex:parola' | sudo chpasswd",
+                "explicatie": "Setează parola."
+              }
+            ],
+            "retine": "În proiectele finale contează integrarea pașilor, nu o singură comandă."
+          },
+          "concepte": [
+            "Aplicație practică integrată"
+          ],
           "exercitii": [
             {
               "id": "p1_1",
@@ -446,7 +2328,46 @@
         {
           "id_skill": "proiect_2",
           "titlu": "Script backup automat",
-          "concepte": ["Aplicație practică integrată"],
+          "lectie": {
+            "titlu": "Proiect final: backup automat",
+            "descriere": "Acest proiect te învață să creezi backupuri arhivate, datate și curățate automat.",
+            "concepte": [
+              {
+                "nume": "tar",
+                "explicatie": "Creează arhive."
+              },
+              {
+                "nume": "date",
+                "explicatie": "Generează timestamp."
+              },
+              {
+                "nume": "find -mtime",
+                "explicatie": "Găsește backupuri vechi."
+              },
+              {
+                "nume": "log",
+                "explicatie": "Înregistrează rezultatul."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "tar -czf backup.tar.gz /home",
+                "explicatie": "Creează arhivă."
+              },
+              {
+                "comanda": "date +%F_%H-%M",
+                "explicatie": "Format de dată pentru nume."
+              },
+              {
+                "comanda": "find /backups -mtime +7 -delete",
+                "explicatie": "Șterge backupuri vechi."
+              }
+            ],
+            "retine": "Un backup bun are nume clar, locație sigură și curățare automată."
+          },
+          "concepte": [
+            "Aplicație practică integrată"
+          ],
           "exercitii": [
             {
               "id": "p2_1",
@@ -458,7 +2379,50 @@
         {
           "id_skill": "proiect_3",
           "titlu": "Script monitorizare host",
-          "concepte": ["Aplicație practică integrată"],
+          "lectie": {
+            "titlu": "Proiect final: monitorizare host",
+            "descriere": "Acest proiect urmărește resursele sistemului și generează alerte când valorile depășesc praguri.",
+            "concepte": [
+              {
+                "nume": "CPU/RAM/Disk",
+                "explicatie": "Metrici esențiale."
+              },
+              {
+                "nume": "df",
+                "explicatie": "Spațiu pe disc."
+              },
+              {
+                "nume": "free",
+                "explicatie": "Memorie."
+              },
+              {
+                "nume": "systemctl",
+                "explicatie": "Verifică servicii."
+              },
+              {
+                "nume": "log",
+                "explicatie": "Salvează metrici."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "df -h",
+                "explicatie": "Afișează disk usage."
+              },
+              {
+                "comanda": "free -m",
+                "explicatie": "Afișează memoria."
+              },
+              {
+                "comanda": "systemctl is-active nginx",
+                "explicatie": "Verifică serviciu."
+              }
+            ],
+            "retine": "Monitorizarea utilă are praguri clare și loguri ușor de citit."
+          },
+          "concepte": [
+            "Aplicație practică integrată"
+          ],
           "exercitii": [
             {
               "id": "p3_1",
@@ -470,7 +2434,50 @@
         {
           "id_skill": "proiect_4",
           "titlu": "Script analiză log",
-          "concepte": ["Aplicație practică integrată"],
+          "lectie": {
+            "titlu": "Proiect final: analiză log",
+            "descriere": "Acest proiect extrage informații utile din loguri de autentificare pentru a detecta încercări eșuate.",
+            "concepte": [
+              {
+                "nume": "grep",
+                "explicatie": "Filtrează linii."
+              },
+              {
+                "nume": "awk",
+                "explicatie": "Extrage coloane."
+              },
+              {
+                "nume": "sort",
+                "explicatie": "Sortează."
+              },
+              {
+                "nume": "uniq -c",
+                "explicatie": "Numără apariții."
+              },
+              {
+                "nume": "auth.log",
+                "explicatie": "Log de autentificare."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "grep 'Failed password' /var/log/auth.log",
+                "explicatie": "Găsește loginuri eșuate."
+              },
+              {
+                "comanda": "awk '{print $11}'",
+                "explicatie": "Extrage câmpuri."
+              },
+              {
+                "comanda": "sort | uniq -c",
+                "explicatie": "Numără apariții."
+              }
+            ],
+            "retine": "Analiza logurilor combină filtrare, extragere și agregare."
+          },
+          "concepte": [
+            "Aplicație practică integrată"
+          ],
           "exercitii": [
             {
               "id": "p4_1",
@@ -482,7 +2489,50 @@
         {
           "id_skill": "proiect_5",
           "titlu": "Script provisioning VM",
-          "concepte": ["Aplicație practică integrată"],
+          "lectie": {
+            "titlu": "Proiect final: provisioning VM",
+            "descriere": "Acest proiect simulează pregătirea automată a unei mașini virtuale pentru utilizare reală.",
+            "concepte": [
+              {
+                "nume": "apt/yum",
+                "explicatie": "Instalează pachete."
+              },
+              {
+                "nume": "useradd",
+                "explicatie": "Creează user."
+              },
+              {
+                "nume": "SSH key",
+                "explicatie": "Acces securizat."
+              },
+              {
+                "nume": "firewall",
+                "explicatie": "Controlează porturi."
+              },
+              {
+                "nume": "systemctl",
+                "explicatie": "Pornește servicii."
+              }
+            ],
+            "exemple": [
+              {
+                "comanda": "sudo apt install nginx docker git",
+                "explicatie": "Instalează pachete."
+              },
+              {
+                "comanda": "sudo useradd -m devops",
+                "explicatie": "Creează user."
+              },
+              {
+                "comanda": "sudo systemctl enable nginx",
+                "explicatie": "Activează serviciu la boot."
+              }
+            ],
+            "retine": "Provisioning înseamnă să transformi un sistem gol într-un server configurat."
+          },
+          "concepte": [
+            "Aplicație practică integrată"
+          ],
           "exercitii": [
             {
               "id": "p5_1",

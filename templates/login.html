@@ -2,85 +2,368 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <title>AI Tutor - Autentificare</title>
+    <title>AI Tutor Linux - Autentificare</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
     <style>
-        .auth-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
-        .auth-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; transition: border-color 0.3s; box-sizing: border-box; }
-        .auth-input:focus { border-color: #8ba888; }
-        .auth-btn { width: 100%; padding: 15px; background: #1a1a2e; color: white; border: none; border-radius: 12px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 1.1rem; cursor: pointer; margin-top: 20px; transition: background 0.3s; }
-        .auth-btn:hover { background: #8ba888; }
-        .auth-switch { margin-top: 25px; font-size: 0.95rem; color: #666; font-family: 'Inter', sans-serif; }
-        .auth-switch a { color: #8ba888; font-weight: bold; text-decoration: none; cursor: pointer; }
-        #confirm-password, #email-input { display: none; }
-        .forgot-link { display: block; margin-top: 15px; color: #666; font-size: 0.9rem; text-decoration: none; font-family: 'Inter', sans-serif; }
-        .forgot-link:hover { color: #1a1a2e; text-decoration: underline; }
+        body {
+            background: linear-gradient(135deg, #fdf2f4 0%, #f8f9fa 55%, #e8f5e9 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .landing-wrapper {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: center;
+            gap: 50px;
+            max-width: 1150px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .hero-section {
+            padding: 20px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: #1a1a2e;
+            color: white;
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 4.3rem;
+            line-height: 0.95;
+            margin: 0;
+            color: #1a1a2e;
+        }
+
+        .hero-title span {
+            color: #8ba888;
+        }
+
+        .hero-description {
+            margin-top: 26px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #555;
+            max-width: 620px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+            margin-top: 32px;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.75);
+            border: 1px solid rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 22px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.04);
+        }
+
+        .feature-icon {
+            font-size: 1.7rem;
+            margin-bottom: 10px;
+        }
+
+        .feature-card strong {
+            display: block;
+            margin-bottom: 7px;
+            color: #1a1a2e;
+        }
+
+        .feature-card p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .auth-container {
+            background: white;
+            padding: 42px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+
+        .auth-logo {
+            width: 66px;
+            height: 66px;
+            margin: 0 auto 18px auto;
+            border-radius: 24px;
+            background: #f5cfd5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.05);
+        }
+
+        .auth-container h1 {
+            font-family: 'Syne', sans-serif;
+            color: #1a1a2e;
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        .auth-subtitle {
+            color: #666;
+            margin-top: 12px;
+            margin-bottom: 28px;
+            font-size: 0.95rem;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 15px;
+            margin: 9px 0;
+            border: 2px solid #f0f0f0;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .auth-input:focus {
+            border-color: #8ba888;
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 15px;
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: bold;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .auth-btn:hover {
+            background: #8ba888;
+            transform: translateY(-2px);
+        }
+
+        .forgot-link {
+            display: block;
+            margin-top: 16px;
+            color: #666;
+            font-size: 0.9rem;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .forgot-link:hover {
+            color: #1a1a2e;
+            text-decoration: underline;
+        }
+
+        .auth-switch {
+            margin-top: 26px;
+            font-size: 0.95rem;
+            color: #666;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .auth-switch a {
+            color: #8ba888;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        #confirm-password,
+        #email-input {
+            display: none;
+        }
+
+        .flash-message {
+            background: rgba(255, 71, 87, 0.1);
+            color: #ff4757;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: bold;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            .landing-wrapper {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .auth-container {
+                padding: 32px 24px;
+            }
+        }
     </style>
 </head>
-<body style="background-color: #f8f9fa;">
-    <div class="auth-container">
-        <h1 id="auth-title" style="font-family: 'Syne', sans-serif; color: #1a1a2e; margin-top: 0; font-size: 2.5rem;">Conectare</h1>
-        
-        <form id="auth-form" action="/login" method="POST" onsubmit="return validateForm()">
-            <input type="text" name="username" class="auth-input" placeholder="Nume utilizator" required autocomplete="off">
-            <input type="email" name="email" id="email-input" class="auth-input" placeholder="Adresa de email" autocomplete="off">
-            <input type="password" name="password" id="main-password" class="auth-input" placeholder="Parolă" required>
-            <input type="password" name="confirm_password" id="confirm-password" class="auth-input" placeholder="Confirmă parola">
-            
-            <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
-        </form>
 
-        <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
+<body>
+    <div class="landing-wrapper">
+        <section class="hero-section">
+            <div class="hero-badge">Platformă educațională cu AI</div>
 
-        <div class="auth-switch">
-            <span id="auth-text">Nu ai cont?</span> 
-            <a onclick="toggleAuthMode()">Creează unul aici</a>
-        </div>
-        
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div style="background: rgba(255, 71, 87, 0.1); color: #ff4757; padding: 10px; border-radius: 8px; margin-top: 20px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 0.9rem;">
-              {{ messages[0] }}
+            <h1 class="hero-title">
+                Învață Linux<br>
+                cu un <span>AI Tutor</span>
+            </h1>
+
+            <p class="hero-description">
+                AI Tutor Linux este o platformă interactivă care te ajută să înveți comenzi Linux prin lecții scurte,
+                exemple practice, exerciții gamificate și feedback generat cu ajutorul unui model AI.
+            </p>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📘</div>
+                    <strong>Lecții ghidate</strong>
+                    <p>Înainte de fiecare skill primești context, concepte și exemple clare.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <strong>Asistent AI</strong>
+                    <p>Primești explicații personalizate și feedback pentru răspunsuri.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <strong>Gamification</strong>
+                    <p>XP, vieți, strike-uri și progres pe lumi, inspirat din aplicațiile moderne.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💻</div>
+                    <strong>Exerciții Linux</strong>
+                    <p>Exersezi comenzi reale pentru navigare, Bash, servicii și automatizare.</p>
+                </div>
             </div>
-          {% endif %}
-        {% endwith %}
+        </section>
+
+        <section class="auth-container">
+            <div class="auth-logo">🐧</div>
+
+            <h1 id="auth-title">Conectare</h1>
+            <p class="auth-subtitle" id="auth-subtitle">
+                Intră în cont pentru a continua cursul.
+            </p>
+
+            <form id="auth-form" action="/login" method="POST" onsubmit="return validateForm()">
+                <input type="text" name="username" class="auth-input" placeholder="Nume utilizator" required autocomplete="off">
+                <input type="email" name="email" id="email-input" class="auth-input" placeholder="Adresa de email" autocomplete="off">
+                <input type="password" name="password" id="main-password" class="auth-input" placeholder="Parolă" required>
+                <input type="password" name="confirm_password" id="confirm-password" class="auth-input" placeholder="Confirmă parola">
+
+                <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
+            </form>
+
+            <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
+
+            <div class="auth-switch">
+                <span id="auth-text">Nu ai cont?</span>
+                <a id="auth-toggle-text" onclick="toggleAuthMode()">Creează unul aici</a>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {{ messages[0] }}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </section>
     </div>
 
     <script>
         let isLogin = true;
+
         function toggleAuthMode() {
             isLogin = !isLogin;
+
             const form = document.getElementById('auth-form');
             const title = document.getElementById('auth-title');
+            const subtitle = document.getElementById('auth-subtitle');
             const submitBtn = document.getElementById('auth-submit');
             const confirmPw = document.getElementById('confirm-password');
             const emailInput = document.getElementById('email-input');
             const forgotLink = document.getElementById('forgot-pw-link');
+            const authText = document.getElementById('auth-text');
+            const toggleText = document.getElementById('auth-toggle-text');
 
             if (isLogin) {
                 form.action = "/login";
                 title.innerText = "Conectare";
+                subtitle.innerText = "Intră în cont pentru a continua cursul.";
                 submitBtn.innerText = "Intră în cont";
+
                 confirmPw.style.display = "none";
                 emailInput.style.display = "none";
                 forgotLink.style.display = "block";
+
                 confirmPw.removeAttribute("required");
                 emailInput.removeAttribute("required");
+
+                authText.innerText = "Nu ai cont?";
+                toggleText.innerText = "Creează unul aici";
             } else {
                 form.action = "/register";
-                title.innerText = "Creare Cont";
+                title.innerText = "Creare cont";
+                subtitle.innerText = "Creează un cont și începe aventura Linux.";
                 submitBtn.innerText = "Înregistrează-te";
+
                 confirmPw.style.display = "block";
                 emailInput.style.display = "block";
                 forgotLink.style.display = "none";
+
                 confirmPw.setAttribute("required", "true");
                 emailInput.setAttribute("required", "true");
+
+                authText.innerText = "Ai deja cont?";
+                toggleText.innerText = "Conectează-te aici";
             }
         }
+
         function validateForm() {
             if (!isLogin) {
                 if (document.getElementById('main-password').value !== document.getElementById('confirm-password').value) {
-                    alert("Parolele nu se potrivesc!"); return false;
+                    alert("Parolele nu se potrivesc!");
+                    return false;
                 }
             }
             return true;
