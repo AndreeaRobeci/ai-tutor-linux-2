@@ -2,179 +2,58 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor - Nivel inițial</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <style>
-        body {
-            background: linear-gradient(135deg, #fdf2f4 0%, #f8f9fa 55%, #e8f5e9 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-        }
-
-        .onboarding-wrapper {
-            max-width: 1050px;
-            margin: 0 auto;
-            padding: 50px 24px;
-        }
-
-        .onboarding-header {
-            background: rgba(255,255,255,0.8);
-            padding: 28px;
-            border-radius: 28px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-        }
-
-        .onboarding-header span {
-            color: #8ba888;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-        }
-
-        .onboarding-header h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.8rem;
-            margin: 10px 0 0;
-            color: #1a1a2e;
-        }
-
-        .choice-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 22px;
-        }
-
-        .choice-card {
-            background: white;
-            border-radius: 30px;
-            padding: 34px;
-            border: 2px solid white;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
-            cursor: pointer;
-            transition: 0.25s;
-            text-align: left;
-            width: 100%;
-            height: 100%;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .choice-card:hover {
-            transform: translateY(-4px);
-            border-color: #8ba888;
-        }
-
-        .choice-icon {
-            font-size: 3rem;
-        }
-
-        .choice-card h2 {
-            font-family: 'Syne', sans-serif;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-        }
-
-        .choice-card p {
-            color: #666;
-            line-height: 1.7;
-        }
-
-        .badge {
-            display: inline-block;
-            margin-top: 18px;
-            padding: 8px 14px;
-            border-radius: 999px;
-            font-weight: bold;
-            font-size: 0.85rem;
-        }
-
-        .green { background: #e8f5e9; color: #2e7d32; }
-        .blue { background: #e3f2fd; color: #1976d2; }
-
-        #test-section {
-            display: none;
-            margin-top: 30px;
-            background: white;
-            padding: 34px;
-            border-radius: 30px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
-        }
-
-        .question-card {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .question-card strong {
-            display: block;
-            margin-bottom: 12px;
-            color: #1a1a2e;
-        }
-
-        .question-card label {
-            display: block;
-            margin: 8px 0;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .submit-btn {
-            background: #1a1a2e;
-            color: white;
-            border: none;
-            padding: 15px 28px;
-            border-radius: 999px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 12px;
-            font-size: 1rem;
-        }
-
-        .submit-btn:hover {
-            background: #8ba888;
-        }
-
-        @media (max-width: 800px) {
-            .choice-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div class="onboarding-wrapper">
-        <div class="onboarding-header">
-            <span>Primul pas după creare cont</span>
-            <h1>Alege cum vrei să începi</h1>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/chat">Acasă</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/chat#profil">Profil</a>
+                <a href="/logout">Deconectare</a>
+            </div>
         </div>
+    </nav>
+
+    <main class="onboarding-wrapper">
+        <section class="onboarding-header glass-panel">
+            <span class="eyebrow">Primul pas după crearea contului</span>
+            <h1 class="page-title">Alege cum vrei să începi</h1>
+            <p class="muted">Platforma poate porni de la bază sau te poate plasa direct într-un capitol potrivit.</p>
+        </section>
 
         <div class="choice-grid">
             <form action="/set_level_beginner" method="POST">
                 <button class="choice-card" type="submit">
-                    <div class="choice-icon">🌱</div>
-                    <h2>Nu știu nimic</h2>
-                    <p>Încep de la Lumea 1, cu lecții introductive, exemple simple și exerciții pas cu pas.</p>
+                    <div class="choice-icon">01</div>
+                    <h2 class="section-title">Nu știu nimic</h2>
+                    <p class="muted">Încep de la Capitolul 1, cu lecții introductive, exemple simple și exerciții pas cu pas.</p>
                     <span class="badge green">Recomandat pentru începători</span>
                 </button>
             </form>
 
             <button class="choice-card" type="button" onclick="showTest()">
-                <div class="choice-icon">⚡</div>
-                <h2>Știu ceva Bash / Linux</h2>
-                <p>Fac un mini test de plasare, iar platforma îmi recomandă lumea de start.</p>
-                <span class="badge blue">Test rapid · 5 întrebări</span>
+                <div class="choice-icon">$?</div>
+                <h2 class="section-title">Știu ceva Bash / Linux</h2>
+                <p class="muted">Fac o evaluare inițială, iar platforma îmi recomandă capitolul de start.</p>
+                <span class="badge blue">Test rapid - 5 întrebări</span>
             </button>
         </div>
 
-        <section id="test-section">
-            <h2 style="font-family: 'Syne', sans-serif;">Mini test de plasare</h2>
+        <section id="test-section" class="glass-panel">
+            <h2 class="section-title">Mini test de plasare</h2>
 
             <form action="/submit_placement_test" method="POST">
                 <div class="question-card">
@@ -215,7 +94,7 @@
                 <button class="submit-btn" type="submit">Vezi recomandarea</button>
             </form>
         </section>
-    </div>
+    </main>
 
     <script>
         function showTest() {
@@ -223,6 +102,20 @@
             testSection.style.display = 'block';
             testSection.scrollIntoView({ behavior: 'smooth' });
         }
+
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
     </script>
 </body>
 </html>

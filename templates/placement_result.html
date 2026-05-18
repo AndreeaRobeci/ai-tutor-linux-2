@@ -2,84 +2,61 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rezultat test</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <style>
-        body {
-            background: linear-gradient(135deg, #fdf2f4 0%, #f8f9fa 55%, #e8f5e9 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .result-card {
-            background: white;
-            max-width: 700px;
-            padding: 45px;
-            border-radius: 32px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-        }
-
-        .result-card h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.6rem;
-            color: #1a1a2e;
-            margin-bottom: 10px;
-        }
-
-        .result-card p {
-            color: #666;
-            line-height: 1.7;
-        }
-
-        .result-box {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 22px;
-            padding: 25px;
-            margin: 25px 0;
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-
-        .continue-btn {
-            display: inline-block;
-            background: #1a1a2e;
-            color: white;
-            padding: 14px 26px;
-            border-radius: 999px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .continue-btn:hover {
-            background: #8ba888;
-        }
-    </style>
 </head>
 
 <body>
-    <div class="result-card">
-        <div style="font-size: 4rem;">🚀</div>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
 
-        <h1>Rezultatul testului</h1>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
 
-        <p>Ai obținut scorul:</p>
-
-        <div class="result-box">
-            {{ score }}/5 <br>
-            Start recomandat: Lumea {{ start_world }}
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/chat">Acasă</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/chat#profil">Profil</a>
+                <a href="/logout">Deconectare</a>
+            </div>
         </div>
+    </nav>
 
-        <p>Poți continua acum în platformă. Progresul tău va porni de la nivelul recomandat.</p>
+    <main class="center-shell">
+        <section class="result-card">
+            <span class="eyebrow">Test finalizat</span>
+            <h1 class="page-title">Rezultatul testului</h1>
+            <p class="muted">Ai obținut scorul:</p>
 
-        <a href="/exercices" class="continue-btn">Continuă spre exerciții</a>
-    </div>
+            <div class="result-box">
+                {{ score }}/5 <br>
+                Pornire recomandată: Capitolul {{ start_world }}
+            </div>
+
+            <p class="muted">Poți continua acum în platformă. Progresul tău va porni de la nivelul recomandat.</p>
+
+            <a href="/exercices" class="continue-btn">Continuă spre exerciții</a>
+        </section>
+    </main>
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+    </script>
 </body>
 </html>

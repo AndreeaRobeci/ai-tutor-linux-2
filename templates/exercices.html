@@ -2,59 +2,118 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor - Exerciții</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1 style="font-family: 'Syne', sans-serif;">Harta Cursului Linux</h1>
-        
-        <div id="status-bar" style="display: flex; gap: 20px; background: white; padding: 10px 25px; border-radius: 50px; box-shadow: 2px 2px 0px rgba(0,0,0,0.05); margin-bottom: 20px; width: fit-content; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 1.1rem; align-items: center;">
-            <span id="stat-hp" style="color: #ff4757; transition: transform 0.2s;">❤️ {{ hp }}</span>
-            <span id="stat-xp" style="color: #fca311; transition: transform 0.2s;">⭐ {{ xp }} XP</span>
-            <span id="stat-strike" style="color: #ff7f50; transition: transform 0.2s;">🔥 Strike: {{ strike_curent }}</span>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/chat">Tutor AI</a>
+                <a href="/logout">Deconectare</a>
+            </div>
         </div>
-        <a href="/chat" class="nav-button">⬅ Înapoi la Chat</a>
+    </nav>
+
+    <main class="container">
+        <header class="course-header">
+            <span class="eyebrow">Harta cursului</span>
+            <h1 class="page-title">Exerciții <span class="gradient-text">Linux</span></h1>
+            <p class="muted">Progresează prin capitole, parcurge lecțiile și trimite comenzi Linux concise.</p>
+
+            <div class="course-toolbar">
+                <div id="status-bar" class="status-bar">
+                    <span id="stat-hp" class="stat-pill stat-hp"><span class="stat-icon">❤️</span> Viață {{ hp }}</span>
+                    <span id="stat-xp" class="stat-pill stat-xp"><span class="stat-icon">⭐</span> {{ xp }} XP</span>
+                    <span id="stat-strike" class="stat-pill stat-strike"><span class="stat-icon">🔥</span> Strike: {{ strike_curent }}</span>
+                </div>
+                <a href="/chat" class="nav-button">Chat AI</a>
+            </div>
+        </header>
 
         <section class="card" id="main-card">
-            <h2 style="font-family: 'Syne', sans-serif; margin-top: 0;">Lista de Exerciții</h2>
-            
-            <div id="course-map" style="margin-top: 30px;">Se încarcă nivelurile...</div>
+            <h2 class="section-title">Lista de exerciții</h2>
+            <p class="muted">Fiecare subiect se deblochează progresiv, după lecție și exercițiile anterioare.</p>
 
-            <div id="out-of-lives-screen" style="display: none; text-align: center; padding: 40px; background: #1a1a2e; color: white; border-radius: 20px; font-family: 'Inter', sans-serif; margin-top: 30px;">
-                <h2 style="color: #ff4757; font-family: 'Syne', sans-serif; font-size: 2rem; margin-top: 0;">Ai rămas fără inimi! 💔</h2>
-                <p style="margin-bottom: 10px; font-size: 1.1rem;">Vei putea accesa din nou exercițiile în:</p>
-                <h3 id="lock-timer" style="color: #ff4d4d; font-size: 2.5rem; margin-top: 0; margin-bottom: 25px;">24:00:00</h3>
-                <button onclick="window.location.href='/chat'" style="padding: 12px 25px; background: #8ba888; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">Întoarce-te la pagina principală</button>
+            <div id="course-map" class="course-map">Se încarcă nivelurile...</div>
+
+            <div id="out-of-lives-screen" class="out-of-lives">
+                <h2 class="section-title">Ai rămas fără inimi</h2>
+                <p class="muted">Vei putea accesa din nou exercițiile în:</p>
+                <h3 id="lock-timer" class="lock-timer">24:00:00</h3>
+                <button onclick="window.location.href='/chat'" class="primary-btn">Întoarce-te la pagina principală</button>
             </div>
         </section>
-    </div>
+    </main>
 
     <script>
-        // ==========================================
-        // SISTEMUL DE GAMIFICATION
-        // ==========================================
-        let openWorlds = new Set(); 
-
+        let openWorlds = new Set();
+        let courseData = null;
 
         const START_WORLD = Number("{{ start_world|default(1) }}");
         const SERVER_XP = Number("{{ xp|default(0) }}");
-        const USER_ID = "{{ session.get('user_id', 'guest') }}";
+        const USER_ID = "{{ user_id|default(session.get('user_id', 'guest')) }}";
         const USERNAME = "{{ username }}";
         const SERVER_HP = Number("{{ hp|default(5) }}");
         const SERVER_STRIKE = Number("{{ strike_curent|default(0) }}");
+        const SERVER_COMPLETED_TASKS = {{ completed_tasks|default([])|tojson }};
+        const currentStats = {
+            hp: SERVER_HP,
+            xp: SERVER_XP,
+            strike: SERVER_STRIKE,
+            max_strike: 0
+        };
+        const STORAGE_KEYS = {
+            completedTasks: `ai_tutor_completed_tasks_user_${USER_ID}`,
+            completedLessons: `ai_tutor_completed_lessons_user_${USER_ID}`,
+            exerciseLockTime: `exerciseLockTime_user_${USER_ID}`,
+            placementApplied: `placement_applied_user_${USER_ID}`
+        };
+
+        function readStorageList(key) {
+            try {
+                return JSON.parse(localStorage.getItem(key) || '[]');
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function writeStorageList(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        function syncCompletedTasksFromServer() {
+            writeStorageList(STORAGE_KEYS.completedTasks, SERVER_COMPLETED_TASKS.map(String));
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
 
         function applyPlacementProgress(data) {
             if (START_WORLD <= 1) return;
 
-            const placementKey = `placement_applied_user_${USER_ID}`;
+            const placementKey = STORAGE_KEYS.placementApplied;
 
             if (localStorage.getItem(placementKey) === "yes") {
                 return;
             }
 
-            let completedTasks = JSON.parse(localStorage.getItem('ai_tutor_completed_tasks') || '[]');
-            let completedLessons = JSON.parse(localStorage.getItem('ai_tutor_completed_lessons') || '[]');
+            let completedTasks = readStorageList(STORAGE_KEYS.completedTasks);
+            let completedLessons = readStorageList(STORAGE_KEYS.completedLessons);
 
             data.curs_linux.forEach(lume => {
                 if (lume.id_lume < START_WORLD) {
@@ -79,25 +138,24 @@
                 }
             });
 
-            localStorage.setItem('ai_tutor_completed_tasks', JSON.stringify(completedTasks));
-            localStorage.setItem('ai_tutor_completed_lessons', JSON.stringify(completedLessons));
+            writeStorageList(STORAGE_KEYS.completedTasks, completedTasks);
+            writeStorageList(STORAGE_KEYS.completedLessons, completedLessons);
             localStorage.setItem(placementKey, "yes");
         }
-
 
         let currentLessonSkillId = null;
 
         function isLessonCompleted(skillId) {
-            const completedLessons = JSON.parse(localStorage.getItem('ai_tutor_completed_lessons') || '[]');
+            const completedLessons = readStorageList(STORAGE_KEYS.completedLessons);
             return completedLessons.includes(skillId.toString());
         }
 
         function markLessonCompleted(skillId) {
-            const completedLessons = JSON.parse(localStorage.getItem('ai_tutor_completed_lessons') || '[]');
+            const completedLessons = readStorageList(STORAGE_KEYS.completedLessons);
 
             if (!completedLessons.includes(skillId.toString())) {
                 completedLessons.push(skillId.toString());
-                localStorage.setItem('ai_tutor_completed_lessons', JSON.stringify(completedLessons));
+                writeStorageList(STORAGE_KEYS.completedLessons, completedLessons);
             }
         }
 
@@ -116,8 +174,8 @@
             lectie.concepte.forEach(concept => {
                 conceptsContainer.innerHTML += `
                     <div class="lesson-concept-card">
-                        <strong>${concept.nume}</strong>
-                        <p>${concept.explicatie}</p>
+                        <strong>${escapeHtml(concept.nume)}</strong>
+                        <p>${escapeHtml(concept.explicatie)}</p>
                     </div>
                 `;
             });
@@ -128,13 +186,25 @@
             lectie.exemple.forEach(ex => {
                 examplesContainer.innerHTML += `
                     <div class="lesson-example">
-                        <div class="lesson-command">$ ${ex.comanda}</div>
-                        <div class="lesson-explanation">${ex.explicatie}</div>
+                        <div class="lesson-command">$ ${escapeHtml(ex.comanda)}</div>
+                        <div class="lesson-explanation">${escapeHtml(ex.explicatie)}</div>
                     </div>
                 `;
             });
 
             document.getElementById('lessonModal').style.display = 'flex';
+        }
+
+        function openLessonById(skillId) {
+            if (!courseData) return;
+
+            for (const lume of courseData.curs_linux) {
+                const skill = lume.skill_uri.find(item => item.id_skill === skillId);
+                if (skill) {
+                    openLessonModal(skill);
+                    return;
+                }
+            }
         }
 
         function closeLessonModal() {
@@ -152,74 +222,62 @@
 
         const GameManager = {
             init: function() {
-                if(!localStorage.getItem('ai_tutor_completed_tasks')) {
-                    localStorage.setItem('ai_tutor_completed_tasks', JSON.stringify([]));
-                }
-                
+                syncCompletedTasksFromServer();
+
                 this.updateUI();
             },
             getStats: function() {
-                return {
-                    hp: SERVER_HP,
-                    xp: SERVER_XP,
-                    strike: SERVER_STRIKE,
-                    max_strike: 0
-                };
+                return currentStats;
             },
             updateUI: function() {
                 let stats = this.getStats();
 
-                // Forțăm valorile pe ecran să fie luate din JavaScript (să ignorăm ce randează serverul Python)
                 let hpEl = document.getElementById('stat-hp');
                 let xpEl = document.getElementById('stat-xp');
-                if(hpEl && !hpEl.innerText.includes('❤️ ' + stats.hp)) hpEl.innerText = `❤️ ${stats.hp}`;
-                if(xpEl && !xpEl.innerText.includes('⭐ ' + stats.xp)) xpEl.innerText = `⭐ ${stats.xp} XP`;
+                if(hpEl && !hpEl.innerText.includes('Viață ' + stats.hp)) hpEl.innerHTML = `<span class="stat-icon">❤️</span> Viață ${stats.hp}`;
+                if(xpEl && !xpEl.innerText.includes(stats.xp + ' XP')) xpEl.innerHTML = `<span class="stat-icon">⭐</span> ${stats.xp} XP`;
 
-                document.getElementById('stat-strike').innerText = `🔥 Strike: ${stats.strike}`;
+                document.getElementById('stat-strike').innerHTML = `<span class="stat-icon">🔥</span> Strike: ${stats.strike}`;
                 let maxStrikeEl = document.getElementById('stat-max-strike');
                 if (maxStrikeEl) {
-                    maxStrikeEl.innerText = `(🏆 Strike Max: ${stats.max_strike})`;
+                    maxStrikeEl.innerText = `(Strike Max: ${stats.max_strike})`;
                 }
 
                 if (stats.hp <= 0) {
-                    startLockout(); 
+                    startLockout();
                 }
             },
             markTaskComplete: function(taskId) {
-                let completed = JSON.parse(localStorage.getItem('ai_tutor_completed_tasks') || '[]');
+                let completed = readStorageList(STORAGE_KEYS.completedTasks);
                 if (!completed.includes(taskId)) {
                     completed.push(taskId);
-                    localStorage.setItem('ai_tutor_completed_tasks', JSON.stringify(completed));
-                    loadExercises(); 
+                    writeStorageList(STORAGE_KEYS.completedTasks, completed);
+                    loadExercises();
                 }
             }
         };
 
-        // ==========================================
-        // LOGICA DE BLOCARE ȘI TIMER (24H)
-        // ==========================================
         function startLockout() {
-            let lockTime = localStorage.getItem('exerciseLockTime');
-            
+            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
+
             if (!lockTime) {
                 lockTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-                localStorage.setItem('exerciseLockTime', lockTime);
+                localStorage.setItem(STORAGE_KEYS.exerciseLockTime, lockTime);
             }
-            
+
             document.getElementById('course-map').style.display = 'none';
             document.getElementById('out-of-lives-screen').style.display = 'block';
         }
 
         function updateTimerDisplay() {
-            let lockTime = localStorage.getItem('exerciseLockTime');
+            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
             if (!lockTime) return;
 
             let now = new Date().getTime();
             let distance = lockTime - now;
 
             if (distance <= 0) {
-                localStorage.removeItem('exerciseLockTime');
-                
+                localStorage.removeItem(STORAGE_KEYS.exerciseLockTime);
 
                 fetch('/api/reset_lives', {
                     method: 'POST',
@@ -242,25 +300,22 @@
             let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            let displayStr = 
-                (hours < 10 ? "0" + hours : hours) + "h " + 
-                (minutes < 10 ? "0" + minutes : minutes) + "m " + 
+            let displayStr =
+                (hours < 10 ? "0" + hours : hours) + "h " +
+                (minutes < 10 ? "0" + minutes : minutes) + "m " +
                 (seconds < 10 ? "0" + seconds : seconds) + "s";
-            
+
             let timerEl = document.getElementById('lock-timer');
             if (timerEl) timerEl.innerText = displayStr;
         }
 
         setInterval(updateTimerDisplay, 1000);
 
-        // ==========================================
-        // FUNCȚIE PENTRU DESCHIDERE/ÎNCHIDERE LUMI
-        // ==========================================
         function toggleLume(contentId, arrowId) {
             const content = document.getElementById(contentId);
             const arrow = document.getElementById(arrowId);
-            
-            if (content.style.display === "none") {
+
+            if (content.style.display === "none" || content.style.display === "") {
                 content.style.display = "block";
                 arrow.style.transform = "rotate(180deg)";
                 openWorlds.add(contentId);
@@ -271,66 +326,66 @@
             }
         }
 
-        // ==========================================
-        // ÎNCĂRCAREA EXERCIȚIILOR
-        // ==========================================
         async function loadExercises() {
             if(GameManager.getStats().hp <= 0) {
                 GameManager.updateUI();
-                return; 
+                return;
             }
 
             const mapContainer = document.getElementById("course-map");
-            let completedTasks = JSON.parse(localStorage.getItem('ai_tutor_completed_tasks') || '[]');
-            
+            let completedTasks = readStorageList(STORAGE_KEYS.completedTasks);
+
             try {
                 const res = await fetch("/api/exercices");
                 const data = await res.json();
+                courseData = data;
                 applyPlacementProgress(data);
-                completedTasks = JSON.parse(localStorage.getItem('ai_tutor_completed_tasks') || '[]');
-                
+                completedTasks = readStorageList(STORAGE_KEYS.completedTasks);
+
                 GameManager.updateUI();
-                
+
                 let htmlString = "";
-                let canUnlockNextWorldOrSkill = true; 
+                let canUnlockNextWorldOrSkill = true;
 
                 data.curs_linux.forEach(lume => {
                     let isWorldUnlocked = canUnlockNextWorldOrSkill;
-                    
-                    htmlString += `<div class="lume-card" style="transition: all 0.3s ease; ${!isWorldUnlocked ? 'opacity: 0.6; filter: grayscale(80%);' : ''}">`;
-                    
+                    const worldLockedClass = isWorldUnlocked ? "" : " locked";
+
+                    htmlString += `<div class="lume-card${worldLockedClass}">`;
+
                     htmlString += `
-                        <div ${isWorldUnlocked ? `onclick="toggleLume('lume-content-${lume.id_lume}', 'arrow-${lume.id_lume}')"` : ''} 
-                             style="cursor: ${isWorldUnlocked ? 'pointer' : 'not-allowed'}; display: flex; justify-content: space-between; align-items: center; user-select: none;">
-                            <h3 class="titlu-lume" style="margin: 0;">Lumea ${lume.id_lume}: ${lume.titlu} ${!isWorldUnlocked ? '🔒' : ''}</h3>
-                            <span id="arrow-${lume.id_lume}" style="transition: transform 0.3s ease; font-size: 1.2rem; color: #333;">${!isWorldUnlocked ? '🔒' : '▼'}</span>
+                        <div ${isWorldUnlocked ? `onclick="toggleLume('lume-content-${lume.id_lume}', 'arrow-${lume.id_lume}')"` : ''}
+                             class="lume-header${worldLockedClass}">
+                            <h3 class="titlu-lume">Capitolul ${lume.id_lume}: ${escapeHtml(lume.titlu)} ${!isWorldUnlocked ? 'Blocat' : ''}</h3>
+                            <span id="arrow-${lume.id_lume}" class="lume-arrow">${!isWorldUnlocked ? 'Blocat' : 'v'}</span>
                         </div>
                     `;
-                    
+
                     if (isWorldUnlocked) {
-                        htmlString += `<div id="lume-content-${lume.id_lume}" style="display: none; padding-top: 20px;">`;
-                        
+                        htmlString += `<div id="lume-content-${lume.id_lume}" class="lume-content">`;
+
                         lume.skill_uri.forEach(skill => {
                             let isSkillUnlocked = canUnlockNextWorldOrSkill;
                             let allExercisesInSkillDone = true;
-                            let canUnlockNextEx = isSkillUnlocked; 
+                            let canUnlockNextEx = isSkillUnlocked;
 
                             let hasLesson = skill.lectie !== undefined;
                             let lessonDone = isLessonCompleted(skill.id_skill);
+                            const skillLockedClass = isSkillUnlocked ? "" : " locked";
 
-                            htmlString += `<div class="skill-section" style="transition: all 0.3s ease; ${!isSkillUnlocked ? 'opacity: 0.4; pointer-events: none;' : ''}">`;
+                            htmlString += `<div class="skill-section${skillLockedClass}">`;
 
                             htmlString += `
-                                <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 10px;">
+                                <div class="skill-header">
                                     <div class="titlu-skill">
-                                        Skill: ${skill.titlu} ${!isSkillUnlocked ? '🔒' : ''}
+                                        Subiect: ${escapeHtml(skill.titlu)} ${!isSkillUnlocked ? 'Blocat' : ''}
                                     </div>
 
                                     ${hasLesson ? `
-                                        <button 
-                                            onclick='openLessonModal(${JSON.stringify(skill).replace(/'/g, "\\'")})'
-                                            style="background: #1a1a2e; color: white; border: none; border-radius: 999px; padding: 8px 14px; font-weight: bold; cursor: pointer;">
-                                            📘 ${lessonDone ? 'Revezi lecția' : 'Începe lecția'}
+                                        <button
+                                            onclick="openLessonById(${skill.id_skill})"
+                                            class="lesson-btn">
+                                            ${lessonDone ? 'Revezi lecția' : 'Începe lecția'}
                                         </button>
                                     ` : ''}
                                 </div>
@@ -338,8 +393,8 @@
 
                             if (hasLesson && !lessonDone) {
                                 htmlString += `
-                                    <div style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 14px; border-radius: 14px; margin-bottom: 15px; font-weight: bold;">
-                                        📘 Parcurge lecția scurtă ca să deblochezi exercițiile acestui skill.
+                                    <div class="lesson-gate">
+                                        Parcurge lecția scurtă ca să deblochezi exercițiile acestui subiect.
                                     </div>
                                 `;
                             }
@@ -347,55 +402,53 @@
                             skill.exercitii.forEach(ex => {
                                 let isExCompleted = completedTasks.includes(ex.id.toString());
                                 let isExUnlocked = canUnlockNextEx && (!hasLesson || lessonDone);
-                                
-                                if (!isExCompleted) allExercisesInSkillDone = false; 
-                                
-                                let styleEx = "transition: all 0.3s ease;";
+
+                                if (!isExCompleted) allExercisesInSkillDone = false;
+
+                                let stateClass = "";
                                 if (isExCompleted) {
-                                    styleEx += "border-left: 4px solid #2e7d32; background-color: #e8f5e9; color: #1b5e20;";
+                                    stateClass = " completed";
                                 } else if (!isExUnlocked) {
-                                    styleEx += "opacity: 0.4; filter: grayscale(100%); pointer-events: none;";
+                                    stateClass = " locked";
                                 }
 
-                                htmlString += `<div class="exercitiu-item" style="${styleEx}">
-                                    <strong>Exercițiul ${ex.id.split('_')[1]}:</strong> ${isExCompleted ? '✅' : (!isExUnlocked ? '🔒' : '')}<br>
-                                    <p style="margin-top: 5px; margin-bottom: 15px;">${ex.cerinta}</p>
-                                    
-                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                const exNumber = ex.id.includes('_') ? ex.id.split('_')[1] : ex.id;
+                                const inputState = isExCompleted
+                                    ? 'disabled value="Rezolvat corect!"'
+                                    : (!isExUnlocked ? 'disabled placeholder="Blocat"' : 'placeholder="scrie comanda..."');
 
-                                        <div style="display: flex; align-items: center; background: #1e1e1e; padding: 10px; border-radius: 8px; flex: 1;">
-                                            
-                                            <span style="color: #00ff9c; font-family: monospace; margin-right: 8px;">
-                                                ${USERNAME}@bash:~$
-                                            </span>
+                                htmlString += `<div class="exercitiu-item${stateClass}">
+                                    <strong class="exercise-label">Exercițiul ${escapeHtml(exNumber)} ${isExCompleted ? 'Rezolvat' : (!isExUnlocked ? 'Blocat' : '')}</strong>
+                                    <p class="exercise-task">${escapeHtml(ex.cerinta)}</p>
 
-                                            <input 
-                                                type="text" 
-                                                id="input-${ex.id}" 
-                                                data-cerinta="${ex.cerinta}" 
-                                                onpaste="return false;" 
+                                    <div class="exercise-actions">
+                                        <div class="terminal-line">
+                                            <span class="terminal-prompt">${escapeHtml(USERNAME)}@bash:~$</span>
+                                            <input
+                                                type="text"
+                                                id="input-${ex.id}"
+                                                data-cerinta="${escapeHtml(ex.cerinta)}"
+                                                onpaste="return false;"
                                                 autocomplete="off"
-                                                ${isExCompleted ? 'disabled value="Rezolvat corect!"' : (!isExUnlocked ? 'disabled placeholder="Blocat 🔒"' : 'placeholder="scrie comanda..."')}
-                                                style="flex: 1; background: transparent; border: none; outline: none; color: white; font-family: monospace; ${isExCompleted || !isExUnlocked ? 'opacity: 0.6;' : ''}"
+                                                ${inputState}
+                                                class="terminal-input"
                                             >
-
                                         </div>
-    
-                                        <button onclick="trimiteRaspuns('${ex.id}')" ${isExCompleted || !isExUnlocked ? 'disabled' : ''} style="padding: 10px 20px; background-color: ${isExCompleted || !isExUnlocked ? '#ccc' : '#8ba888'}; color: ${isExCompleted || !isExUnlocked ? '#666' : 'white'}; border: none; border-radius: 8px; cursor: ${isExCompleted || !isExUnlocked ? 'not-allowed' : 'pointer'}; font-weight: bold;">
+
+                                        <button onclick="trimiteRaspuns('${ex.id}')" ${isExCompleted || !isExUnlocked ? 'disabled' : ''} class="exercise-submit">
                                             ${isExCompleted ? 'Rezolvat' : (!isExUnlocked ? 'Blocat' : 'Trimite')}
                                         </button>
-
                                     </div>
-                                    <div id="feedback-${ex.id}" style="margin-top: 10px; font-size: 0.9em; display: none;"></div>
+                                    <div id="feedback-${ex.id}" class="feedback"></div>
                                 </div>`;
 
                                 if (!isExCompleted) {
                                     canUnlockNextEx = false;
                                 }
                             });
-                            
+
                             htmlString += `</div>`;
-                            
+
                             if (!allExercisesInSkillDone) {
                                 canUnlockNextWorldOrSkill = false;
                             }
@@ -405,39 +458,46 @@
                             let bossId = `boss-${lume.id_lume}`;
                             let isBossUnlocked = canUnlockNextWorldOrSkill;
                             let isBossCompleted = completedTasks.includes(bossId);
+                            let bossClass = isBossUnlocked ? "" : " locked";
+                            const bossInputState = isBossCompleted
+                                ? 'disabled value="Provocare finală completată!"'
+                                : (!isBossUnlocked ? 'disabled placeholder="Luptă blocată"' : 'placeholder="Scrie comanda finală..."');
 
                             htmlString += `
-                                <div style="transition: all 0.3s ease; background-color: ${!isBossUnlocked ? '#e0e0e0' : '#ffeb3b'}; border: 2px solid #000; border-radius: 15px; padding: 20px; margin-top: 30px; color: #000; ${!isBossUnlocked ? 'opacity: 0.5; pointer-events: none;' : 'box-shadow: 4px 4px 0px #000;'}">
-                                    <h4 style="margin: 0 0 10px 0; font-size: 1.5rem;">👑 BOSS FINAL ${!isBossUnlocked ? '🔒' : ''} ${isBossCompleted ? '✅' : ''}</h4>
-                                    <p><strong>Misiune:</strong> ${lume.boss_level.cerinta}</p>
-                                    ${lume.boss_level.obiectiv_final ? `<p><strong>Obiectiv:</strong> ${lume.boss_level.obiectiv_final}</p>` : ''}
-                                    
-                                    <div style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
-                                        <input type="text" id="input-${bossId}" data-cerinta="${lume.boss_level.cerinta}" onpaste="return false;" autocomplete="off" ${isBossCompleted ? 'disabled value="Boss Învins!"' : (!isBossUnlocked ? 'disabled placeholder="Luptă blocată 🔒"' : 'placeholder="Scrie comanda finală..."')} style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #000; outline: none; color: #111; ${isBossCompleted || !isBossUnlocked ? 'opacity: 0.6;' : ''}">
-                                        
-                                        <button onclick="trimiteRaspuns('${bossId}')" ${isBossCompleted || !isBossUnlocked ? 'disabled' : ''} style="padding: 10px 20px; background-color: ${isBossCompleted || !isBossUnlocked ? '#ccc' : '#111'}; color: ${isBossCompleted || !isBossUnlocked ? '#666' : 'white'}; border: none; border-radius: 8px; cursor: ${isBossCompleted || !isBossUnlocked ? 'not-allowed' : 'pointer'}; font-weight: bold;">
-                                            ${isBossCompleted ? 'Învins' : (!isBossUnlocked ? 'Blocat' : 'Atacă Boss-ul')}
+                                <div class="boss-card${bossClass}">
+                                    <h4>Provocare finală ${!isBossUnlocked ? 'Blocată' : ''} ${isBossCompleted ? 'Completată' : ''}</h4>
+                                    <p><strong>Misiune:</strong> ${escapeHtml(lume.boss_level.cerinta)}</p>
+                                    ${lume.boss_level.obiectiv_final ? `<p><strong>Obiectiv:</strong> ${escapeHtml(lume.boss_level.obiectiv_final)}</p>` : ''}
+
+                                    <div class="boss-actions">
+                                        <div class="terminal-line">
+                                            <span class="terminal-prompt">${escapeHtml(USERNAME)}@boss:~$</span>
+                                            <input type="text" id="input-${bossId}" data-cerinta="${escapeHtml(lume.boss_level.cerinta)}" onpaste="return false;" autocomplete="off" ${bossInputState} class="terminal-input">
+                                        </div>
+
+                                        <button onclick="trimiteRaspuns('${bossId}')" ${isBossCompleted || !isBossUnlocked ? 'disabled' : ''} class="boss-submit">
+                                            ${isBossCompleted ? 'Completată' : (!isBossUnlocked ? 'Blocat' : 'Atacă')}
                                         </button>
                                     </div>
-                                    <div id="feedback-${bossId}" style="margin-top: 10px; font-size: 0.9em; display: none;"></div>
+                                    <div id="feedback-${bossId}" class="feedback"></div>
                                 </div>
                             `;
 
                             if (!isBossCompleted) {
-                                canUnlockNextWorldOrSkill = false; 
+                                canUnlockNextWorldOrSkill = false;
                             }
                         }
-                        
+
                         htmlString += `</div>`;
                     } else {
-                        htmlString += `<div id="lume-content-${lume.id_lume}" style="display: none; padding-top: 20px;"></div>`;
+                        htmlString += `<div id="lume-content-${lume.id_lume}" class="lume-content"></div>`;
                     }
-                    
-                    htmlString += `</div>`; 
+
+                    htmlString += `</div>`;
                 });
 
                 mapContainer.innerHTML = htmlString;
-                
+
                 openWorlds.forEach(id => {
                     const content = document.getElementById(id);
                     const arrowId = id.replace('lume-content-', 'arrow-');
@@ -454,9 +514,6 @@
             }
         }
 
-        // ==========================================
-        // FUNCȚIE PENTRU ANIMAȚIA XP-ULUI
-        // ==========================================
         function showXPAnimation(exerciseContainer, score) {
             exerciseContainer.style.position = "relative";
             const popup = document.createElement("div");
@@ -469,10 +526,10 @@
                 popup.innerText = "+7 XP Bine!";
                 popup.classList.add("xp-7");
             } else if (score === 5) {
-                popup.innerText = "+5 XP Aproape!";
-                popup.classList.add("xp-5");
+                popup.innerText = "-1 Viață!";
+                popup.classList.add("xp-0");
             } else {
-                popup.innerText = "-1 Inimă!";
+                popup.innerText = "-1 Viață!";
                 popup.classList.add("xp-0");
             }
 
@@ -482,13 +539,10 @@
             }, 1500);
         }
 
-        // ==========================================
-        // VORBIREA CU AI-UL ȘI CALCULUL SCORULUI
-        // ==========================================
         async function trimiteRaspuns(id) {
             const inputField = document.getElementById(`input-${id}`);
             const feedbackDiv = document.getElementById(`feedback-${id}`);
-            
+
             if(inputField && inputField.value.trim() !== "") {
                 const raspuns = inputField.value.trim();
                 const cerinta = inputField.getAttribute("data-cerinta");
@@ -496,65 +550,78 @@
                 if (raspuns.length > 150) {
                     feedbackDiv.style.display = "block";
                     feedbackDiv.innerHTML = `
-                        <div style="background: rgba(255, 107, 107, 0.15); border-left: 4px solid #ff6b6b; padding: 12px; border-radius: 6px; margin-top: 8px; color: #ff6b6b;">
-                            <strong>Eroare:</strong> Răspuns prea lung!
+                        <div class="feedback-box error">
+                            <strong>Eroare:</strong> Răspuns prea lung.
                         </div>`;
                     return;
                 }
-                
+
                 feedbackDiv.style.display = "block";
-                feedbackDiv.innerHTML = `<span style="opacity: 0.7;"><em>⏳ Evaluatorul AI analizează comanda... 🧠</em></span>`;
+                feedbackDiv.innerHTML = `<span class="muted"><em>Evaluatorul AI analizează comanda...</em></span>`;
 
                 try {
                     const response = await fetch("/api/check_answer", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            cerinta: cerinta, 
-                            raspuns: raspuns 
+                        body: JSON.stringify({
+                            cerinta: cerinta,
+                            raspuns: raspuns,
+                            task_id: id.toString()
                         })
                     });
-                    
+
                     const data = await response.json();
 
                     if (data.error) {
-                        feedbackDiv.innerHTML = `<span style="color: #ff4757;">Eroare: ${data.error}</span>`;
+                        feedbackDiv.innerHTML = `<div class="feedback-box error">Eroare: ${escapeHtml(data.error)}</div>`;
                         return;
                     }
 
-                    const exerciseContainer = inputField.closest('.exercitiu-item') || inputField.parentElement; 
-                    
-                    if (data.scor !== undefined) { 
+                    const exerciseContainer = inputField.closest('.exercitiu-item') || inputField.closest('.boss-card') || inputField.parentElement;
+
+                    if (data.scor !== undefined) {
                         showXPAnimation(exerciseContainer, data.scor);
                     }
 
-                    // ======== NOUA LOGICĂ (DATELE VIN DIRECT DIN SERVER/PYTHON) ========
                     if (data.new_xp !== undefined) {
-                        document.getElementById('stat-xp').innerText = `⭐ ${data.new_xp} XP`;
+                        currentStats.xp = Number(data.new_xp);
+                        document.getElementById('stat-xp').innerHTML = `<span class="stat-icon">⭐</span> ${data.new_xp} XP`;
                     }
 
                     if (data.new_hp !== undefined) {
-                        document.getElementById('stat-hp').innerText = `❤️ ${data.new_hp}`;
+                        currentStats.hp = Number(data.new_hp);
+                        document.getElementById('stat-hp').innerHTML = `<span class="stat-icon">❤️</span> Viață ${data.new_hp}`;
                     }
 
                     if (data.strike_curent !== undefined) {
+                        currentStats.strike = Number(data.strike_curent);
                         const strikeEl = document.getElementById('stat-strike');
-                        strikeEl.innerText = `🔥 Strike: ${data.strike_curent}`;
-                        
-                        // Efect vizual de flacără la răspuns corect
+                        strikeEl.innerHTML = `<span class="stat-icon">🔥</span> Strike: ${data.strike_curent}`;
+
                         if(data.corect) {
-                            strikeEl.style.transform = 'scale(1.4)';
+                            strikeEl.style.transform = 'scale(1.14)';
                             setTimeout(() => strikeEl.style.transform = 'scale(1)', 300);
                         }
                     }
-                    // ================================================================
 
-                    let culoareBorder = data.corect ? '#8ba888' : '#ff4757';
+                    exerciseContainer.classList.remove('answer-success', 'answer-error');
+
+                    if (data.corect) {
+                        exerciseContainer.classList.add('answer-success');
+                    } else {
+                        exerciseContainer.classList.add('answer-error');
+                    }
+
+                    setTimeout(() => {
+                        exerciseContainer.classList.remove('answer-success', 'answer-error');
+                    }, 1600);
+
                     let iconita = data.corect ? '✅ Corect' : '❌ Greșit';
-                    
+                    let stateClass = data.corect ? ' success' : ' error';
+
                     feedbackDiv.innerHTML = `
-                        <div style="background: rgba(255, 255, 255, 0.05); border-left: 4px solid ${culoareBorder}; padding: 12px; border-radius: 6px; margin-top: 8px; line-height: 1.4;">
-                            <strong>${iconita}</strong>: ${data.feedback}
+                        <div class="feedback-box${stateClass}">
+                            <strong>${iconita}:</strong> ${escapeHtml(data.feedback)}
                         </div>`;
 
                     if (data.corect) {
@@ -567,34 +634,44 @@
 
                 } catch (e) {
                     console.error(e);
-                    feedbackDiv.innerHTML = `<span style="color: #ff4757;">Eroare de conexiune la evaluatorul AI.</span>`;
+                    feedbackDiv.innerHTML = `<div class="feedback-box error">Eroare de conexiune la evaluatorul AI.</div>`;
                 }
             }
         }
 
-        // ==========================================
-        // INIȚIALIZARE
-        // ==========================================
         window.onload = function() {
             GameManager.init();
-            
-            let lockTime = localStorage.getItem('exerciseLockTime');
+
+            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
             if (lockTime && new Date().getTime() < lockTime) {
-                startLockout(); 
+                startLockout();
             } else {
                 loadExercises();
             }
         };
+
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
     </script>
 
-    <!-- MODAL LECTIE -->
     <div id="lessonModal" class="lesson-overlay" style="display: none;">
         <div class="lesson-modal">
-            <button class="lesson-close" onclick="closeLessonModal()">×</button>
+            <button class="lesson-close" onclick="closeLessonModal()">x</button>
 
-            <span class="lesson-badge">Lecție înainte de skill</span>
-            <h2 id="lessonTitle"></h2>
-            <p id="lessonDescription"></p>
+            <span class="lesson-badge">Lecție înainte de subiect</span>
+            <h2 id="lessonTitle" class="section-title"></h2>
+            <p id="lessonDescription" class="muted"></p>
 
             <div id="lessonConcepts" class="lesson-grid"></div>
 
@@ -602,12 +679,12 @@
             <div id="lessonExamples" class="lesson-terminal"></div>
 
             <div class="lesson-note">
-                <strong>💡 De reținut:</strong>
+                <strong>De reținut:</strong>
                 <p id="lessonNote"></p>
             </div>
 
             <button class="lesson-start-btn" onclick="unlockCurrentSkill()">
-                Am înțeles, vreau să exersez!
+                Am înțeles, vreau să exersez
             </button>
         </div>
     </div>

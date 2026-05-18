@@ -2,313 +2,201 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor Linux - Autentificare</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-
-    <style>
-        body {
-            background: linear-gradient(135deg, #fdf2f4 0%, #f8f9fa 55%, #e8f5e9 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-        }
-
-        .landing-wrapper {
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            align-items: center;
-            gap: 50px;
-            max-width: 1150px;
-            margin: 0 auto;
-            padding: 40px 24px;
-        }
-
-        .hero-section {
-            padding: 20px;
-        }
-
-        .hero-badge {
-            display: inline-block;
-            background: #1a1a2e;
-            color: white;
-            padding: 9px 16px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 24px;
-        }
-
-        .hero-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 4.3rem;
-            line-height: 0.95;
-            margin: 0;
-            color: #1a1a2e;
-        }
-
-        .hero-title span {
-            color: #8ba888;
-        }
-
-        .hero-description {
-            margin-top: 26px;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: #555;
-            max-width: 620px;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 14px;
-            margin-top: 32px;
-        }
-
-        .feature-card {
-            background: rgba(255,255,255,0.75);
-            border: 1px solid rgba(255,255,255,0.95);
-            padding: 20px;
-            border-radius: 22px;
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.04);
-        }
-
-        .feature-icon {
-            font-size: 1.7rem;
-            margin-bottom: 10px;
-        }
-
-        .feature-card strong {
-            display: block;
-            margin-bottom: 7px;
-            color: #1a1a2e;
-        }
-
-        .feature-card p {
-            margin: 0;
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .auth-container {
-            background: white;
-            padding: 42px;
-            border-radius: 32px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.9);
-        }
-
-        .auth-logo {
-            width: 66px;
-            height: 66px;
-            margin: 0 auto 18px auto;
-            border-radius: 24px;
-            background: #f5cfd5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            box-shadow: 3px 3px 0 rgba(0,0,0,0.05);
-        }
-
-        .auth-container h1 {
-            font-family: 'Syne', sans-serif;
-            color: #1a1a2e;
-            margin: 0;
-            font-size: 2.5rem;
-        }
-
-        .auth-subtitle {
-            color: #666;
-            margin-top: 12px;
-            margin-bottom: 28px;
-            font-size: 0.95rem;
-        }
-
-        .auth-input {
-            width: 100%;
-            padding: 15px;
-            margin: 9px 0;
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s;
-            box-sizing: border-box;
-        }
-
-        .auth-input:focus {
-            border-color: #8ba888;
-        }
-
-        .auth-btn {
-            width: 100%;
-            padding: 15px;
-            background: #1a1a2e;
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-weight: bold;
-            font-family: 'Inter', sans-serif;
-            font-size: 1.05rem;
-            cursor: pointer;
-            margin-top: 18px;
-            transition: background 0.3s, transform 0.2s;
-        }
-
-        .auth-btn:hover {
-            background: #8ba888;
-            transform: translateY(-2px);
-        }
-
-        .forgot-link {
-            display: block;
-            margin-top: 16px;
-            color: #666;
-            font-size: 0.9rem;
-            text-decoration: none;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .forgot-link:hover {
-            color: #1a1a2e;
-            text-decoration: underline;
-        }
-
-        .auth-switch {
-            margin-top: 26px;
-            font-size: 0.95rem;
-            color: #666;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .auth-switch a {
-            color: #8ba888;
-            font-weight: bold;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .auth-switch a:hover {
-            text-decoration: underline;
-        }
-
-        #confirm-password,
-        #email-input {
-            display: none;
-        }
-
-        .flash-message {
-            background: rgba(255, 71, 87, 0.1);
-            color: #ff4757;
-            padding: 10px;
-            border-radius: 10px;
-            margin-top: 20px;
-            font-weight: bold;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 900px) {
-            .landing-wrapper {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .hero-title {
-                font-size: 3rem;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-            }
-
-            .auth-container {
-                padding: 32px 24px;
-            }
-        }
-    </style>
 </head>
 
 <body>
-    <div class="landing-wrapper">
-        <section class="hero-section">
-            <div class="hero-badge">Platformă educațională cu AI</div>
+    <nav class="app-topbar public-topbar">
+        <a href="#top" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+    </nav>
+
+    <div class="floating-particles" aria-hidden="true">
+        <span style="--x: 8%; --s: 3px; --d: 18s; --delay: -4s; --o: 0.42;"></span>
+        <span style="--x: 18%; --s: 5px; --d: 24s; --delay: -12s; --o: 0.35;"></span>
+        <span style="--x: 31%; --s: 2px; --d: 16s; --delay: -8s; --o: 0.55;"></span>
+        <span style="--x: 44%; --s: 4px; --d: 26s; --delay: -18s; --o: 0.3;"></span>
+        <span style="--x: 56%; --s: 3px; --d: 20s; --delay: -9s; --o: 0.5;"></span>
+        <span style="--x: 67%; --s: 6px; --d: 30s; --delay: -15s; --o: 0.28;"></span>
+        <span style="--x: 78%; --s: 3px; --d: 22s; --delay: -6s; --o: 0.45;"></span>
+        <span style="--x: 91%; --s: 4px; --d: 28s; --delay: -20s; --o: 0.32;"></span>
+    </div>
+
+    <main class="landing-wrapper">
+        <section class="hero-section" id="top">
+            <div class="hero-badge"><span class="status-dot"></span> Nou - Tutor Linux bazat pe AI</div>
 
             <h1 class="hero-title">
-                Învață Linux<br>
-                cu un <span>AI Tutor</span>
+                <span class="hero-title-line">The Smarter Way</span>
+                <span class="hero-title-line">to Learn <span class="hero-title-gradient">Linux</span></span>
             </h1>
 
             <p class="hero-description">
-                AI Tutor Linux este o platformă interactivă care te ajută să înveți comenzi Linux prin lecții scurte,
-                exemple practice, exerciții gamificate și feedback generat cu ajutorul unui model AI.
+                Învață Linux pas cu pas, într-o platformă creată pentru practică și progres constant.
             </p>
+
+            <section class="terminal-preview glass-panel" id="tutor-ai">
+                <div class="terminal-topbar">
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-dot"></span>
+                    <span class="terminal-title">~/ai-tutor - bash</span>
+                </div>
+                <div class="terminal-body">
+                    <div><span>student@linux</span>:<span class="terminal-path">~</span>$ whoami</div>
+                    <div class="terminal-output">viitor-administrator-linux</div>
+                    <div><span>student@linux</span>:<span class="terminal-path">~</span>$ ls capitole/</div>
+                    <div class="terminal-output">fundamente-terminal fișiere-directoare permisiuni rețelistică shell-avansat</div>
+                    <div><span>student@linux</span>:<span class="terminal-path">~</span>$ ai --întreabă "cum afișez fișierele ascunse?"</div>
+                    <div class="terminal-output">Încearcă: ls -la - -l afișare detaliată, -a include fișierele ascunse</div>
+                </div>
+            </section>
+
+            <div class="landing-stats">
+                <div class="landing-stat"><strong>Tutor AI</strong><span>feedback adaptiv</span></div>
+                <div class="landing-divider"></div>
+                <div class="landing-stat"><strong>6 capitole</strong><span>progres gradual</span></div>
+                <div class="landing-divider"></div>
+                <div class="landing-stat"><strong>XP + strike</strong><span>învățare gamificată</span></div>
+            </div>
 
             <div class="features">
-                <div class="feature-card">
-                    <div class="feature-icon">📘</div>
+                <section class="feature-card" id="lectii">
+                    <div class="feature-icon">01</div>
                     <strong>Lecții ghidate</strong>
-                    <p>Înainte de fiecare skill primești context, concepte și exemple clare.</p>
+                    <p>Concepte clare înainte de fiecare capitol, cu exemple practice.</p>
+                </section>
+
+                <div class="feature-card">
+                    <div class="feature-icon">AI</div>
+                    <strong>Asistent inteligent</strong>
+                    <p>Explicații personalizate și răspunsuri în limba română.</p>
                 </div>
 
                 <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <strong>Asistent AI</strong>
-                    <p>Primești explicații personalizate și feedback pentru răspunsuri.</p>
+                    <div class="feature-icon">XP</div>
+                    <strong>Gamificare</strong>
+                    <p>XP, vieți, strike-uri și progres pe capitole Linux.</p>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">🎮</div>
-                    <strong>Gamification</strong>
-                    <p>XP, vieți, strike-uri și progres pe lumi, inspirat din aplicațiile moderne.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">💻</div>
-                    <strong>Exerciții Linux</strong>
-                    <p>Exersezi comenzi reale pentru navigare, Bash, servicii și automatizare.</p>
-                </div>
+                <section class="feature-card" id="exercitii">
+                    <div class="feature-icon">$</div>
+                    <strong>Terminal real</strong>
+                    <p>Exersezi comenzi concise, fără răspunsuri copiate sau explicații lungi.</p>
+                </section>
             </div>
         </section>
 
-        <section class="auth-container">
-            <div class="auth-logo">🐧</div>
+        <section class="auth-panel" id="cont">
+            <div class="auth-content">
+                <div class="auth-logo">$_</div>
 
-            <h1 id="auth-title">Conectare</h1>
-            <p class="auth-subtitle" id="auth-subtitle">
-                Intră în cont pentru a continua cursul.
-            </p>
+                <h1 class="auth-title" id="auth-title">Conectare</h1>
+                <p class="auth-subtitle" id="auth-subtitle">
+                    Intră în cont pentru a continua cursul.
+                </p>
 
-            <form id="auth-form" action="/login" method="POST" onsubmit="return validateForm()">
-                <input type="text" name="username" class="auth-input" placeholder="Nume utilizator" required autocomplete="off">
-                <input type="email" name="email" id="email-input" class="auth-input" placeholder="Adresa de email" autocomplete="off">
-                <input type="password" name="password" id="main-password" class="auth-input" placeholder="Parolă" required>
-                <input type="password" name="confirm_password" id="confirm-password" class="auth-input" placeholder="Confirmă parola">
+                <form id="auth-form" class="auth-form" action="/login" method="POST" onsubmit="return validateForm()">
+                    <input type="text" name="username" class="auth-input" placeholder="Nume utilizator" required autocomplete="off">
+                    <input type="email" name="email" id="email-input" class="auth-input" placeholder="Adresa de email" autocomplete="off">
+                    <div class="password-field">
+                        <input type="password" name="password" id="main-password" class="auth-input password-input" placeholder="Parolă" required>
+                        <button type="button" class="password-toggle" data-password-toggle data-target="main-password" aria-label="Afișează parola" aria-pressed="false">
+                            <svg class="eye-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 10.6A2.9 2.9 0 0 0 12 15a3 3 0 0 0 2.4-1.2"></path>
+                                <path d="M7.3 7.9C4.2 9.5 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"></path>
+                                <path d="M17.1 14.5c2.8-1.6 4.4-4.5 4.4-4.5s-3.5-6-9.5-6c-.9 0-1.8.1-2.6.4"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-field" id="confirm-password-field">
+                        <input type="password" name="confirm_password" id="confirm-password" class="auth-input password-input" placeholder="Confirmă parola">
+                        <button type="button" class="password-toggle" data-password-toggle data-target="confirm-password" aria-label="Afișează parola" aria-pressed="false">
+                            <svg class="eye-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg class="eye-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M3 3l18 18"></path>
+                                <path d="M10.6 10.6A2.9 2.9 0 0 0 12 15a3 3 0 0 0 2.4-1.2"></path>
+                                <path d="M7.3 7.9C4.2 9.5 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"></path>
+                                <path d="M17.1 14.5c2.8-1.6 4.4-4.5 4.4-4.5s-3.5-6-9.5-6c-.9 0-1.8.1-2.6.4"></path>
+                            </svg>
+                        </button>
+                    </div>
 
-                <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
-            </form>
+                    <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
+                </form>
 
-            <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
+                <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
 
-            <div class="auth-switch">
-                <span id="auth-text">Nu ai cont?</span>
-                <a id="auth-toggle-text" onclick="toggleAuthMode()">Creează unul aici</a>
+                <div class="auth-switch">
+                    <span id="auth-text">Nu ai cont?</span>
+                    <a id="auth-toggle-text" onclick="toggleAuthMode()">Creează unul aici</a>
+                </div>
+
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div class="flash-message">
+                      {{ messages[0] }}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+
+                <div class="soft-cta glass-panel">
+                    <p>Era ta în terminal începe astăzi. Pornește gratuit, cu exerciții construite pentru progres constant.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="lumen-footer">
+        <div class="lumen-footer-grid">
+            <div>
+                <div class="footer-brand">
+                    <span class="brand-mark">$_</span>
+                    <span>AI Tutor Linux</span>
+                </div>
+                <p>Platformă inteligentă de învățare Linux, construită pentru practică reală, progres gradual și asistență AI personalizată.</p>
             </div>
 
-            {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="flash-message">
-                  {{ messages[0] }}
-                </div>
-              {% endif %}
-            {% endwith %}
-        </section>
-    </div>
+            <div class="footer-column">
+                <strong>Platformă</strong>
+                <a href="#cont">Lecții</a>
+                <a href="#cont">Exerciții</a>
+                <a href="#cont">Tutor AI</a>
+            </div>
+
+            <div class="footer-column">
+                <strong>Cont</strong>
+                <span>Profil utilizator</span>
+                <span>XP și niveluri</span>
+                <span>Strike zilnic</span>
+                <span>Evaluare inițială</span>
+            </div>
+
+            <div class="footer-column">
+                <strong>Cont</strong>
+                <a href="#cont">Autentificare</a>
+                <a href="#cont">Creează cont</a>
+                <span>Profil</span>
+            </div>
+        </div>
+
+        <div class="lumen-footer-bottom">
+            <span>AI Tutor Linux - proiect de licență</span>
+            <span class="footer-terminal">$ exit 0</span>
+        </div>
+    </footer>
 
     <script>
         let isLogin = true;
@@ -321,6 +209,7 @@
             const subtitle = document.getElementById('auth-subtitle');
             const submitBtn = document.getElementById('auth-submit');
             const confirmPw = document.getElementById('confirm-password');
+            const confirmPwField = document.getElementById('confirm-password-field');
             const emailInput = document.getElementById('email-input');
             const forgotLink = document.getElementById('forgot-pw-link');
             const authText = document.getElementById('auth-text');
@@ -332,7 +221,7 @@
                 subtitle.innerText = "Intră în cont pentru a continua cursul.";
                 submitBtn.innerText = "Intră în cont";
 
-                confirmPw.style.display = "none";
+                confirmPwField.style.display = "none";
                 emailInput.style.display = "none";
                 forgotLink.style.display = "block";
 
@@ -347,7 +236,7 @@
                 subtitle.innerText = "Creează un cont și începe aventura Linux.";
                 submitBtn.innerText = "Înregistrează-te";
 
-                confirmPw.style.display = "block";
+                confirmPwField.style.display = "block";
                 emailInput.style.display = "block";
                 forgotLink.style.display = "none";
 
@@ -368,6 +257,19 @@
             }
             return true;
         }
+
+        document.querySelectorAll('[data-password-toggle]').forEach(function(toggle) {
+            toggle.addEventListener('click', function() {
+                const input = document.getElementById(toggle.dataset.target);
+                const isVisible = input.type === 'text';
+
+                input.type = isVisible ? 'password' : 'text';
+                toggle.classList.toggle('is-visible', !isVisible);
+                toggle.setAttribute('aria-pressed', String(!isVisible));
+                toggle.setAttribute('aria-label', isVisible ? 'Afișează parola' : 'Ascunde parola');
+            });
+        });
+
     </script>
 </body>
 </html>

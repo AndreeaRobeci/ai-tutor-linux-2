@@ -2,34 +2,32 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor - Recuperare Cont</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-        .auth-container { max-width: 400px; margin: 100px auto; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; }
-        .auth-input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #f0f0f0; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem; outline: none; box-sizing: border-box; }
-        .auth-btn { width: 100%; padding: 15px; background: #8ba888; color: white; border: none; border-radius: 12px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
-        .back-link { display: block; margin-top: 20px; color: #1a1a2e; font-family: 'Inter', sans-serif; text-decoration: none; font-weight: bold;}
-    </style>
 </head>
-<body style="background-color: #f8f9fa;">
-    <div class="auth-container">
-        <h2 style="font-family: 'Syne', sans-serif; color: #1a1a2e;">Recuperare Cont</h2>
-        <p style="color: #666; font-family: 'Inter', sans-serif; font-size: 0.9rem;">Introdu adresa de email pentru a primi link-ul de resetare.</p>
-        
-        <form action="/forgot_password" method="POST">
-            <input type="email" name="email" class="auth-input" placeholder="Email-ul tau" required autocomplete="off">
-            <button type="submit" class="auth-btn">Trimite link-ul</button>
-        </form>
+<body>
+    <main class="center-shell">
+        <section class="compact-auth glass-panel">
+            <div class="auth-logo">$_</div>
+            <h1 class="auth-title">Recuperare cont</h1>
+            <p class="auth-subtitle">Introdu adresa de email pentru a primi link-ul de resetare.</p>
 
-        <a href="/login" class="back-link">← Înapoi la Conectare</a>
+            <form action="/forgot_password" method="POST" class="auth-form">
+                <input type="email" name="email" class="auth-input" placeholder="Email-ul tău" required autocomplete="off">
+                <button type="submit" class="auth-btn">Trimite link-ul</button>
+            </form>
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            <div style="background: rgba(139, 168, 136, 0.2); color: #4a5d48; padding: 10px; border-radius: 8px; margin-top: 20px; font-weight: bold; font-family: 'Inter', sans-serif; font-size: 0.9rem;">
-              {{ messages[0] }}
-            </div>
-          {% endif %}
-        {% endwith %}
-    </div>
+            <a href="/login" class="back-link">Înapoi la conectare</a>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="flash-message">
+                  {{ messages[0] }}
+                </div>
+              {% endif %}
+            {% endwith %}
+        </section>
+    </main>
 </body>
 </html>

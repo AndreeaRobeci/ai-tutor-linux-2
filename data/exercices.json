@@ -10,7 +10,7 @@
           "titlu": "Navigare",
           "lectie": {
             "titlu": "Navigare în terminal",
-            "descriere": "În acest skill înveți cum te orientezi într-un sistem Linux: unde ești, ce există în directorul curent și cum te muți între directoare.",
+            "descriere": "În acest subiect înveți cum te orientezi într-un sistem Linux: unde ești, ce există în directorul curent și cum te muți între directoare.",
             "concepte": [
               {
                 "nume": "pwd",
@@ -83,7 +83,7 @@
           "titlu": "Manipulare fișiere",
           "lectie": {
             "titlu": "Manipulare fișiere și directoare",
-            "descriere": "În acest skill înveți să creezi, copiezi, muți și ștergi fișiere/directoare, operații de bază pentru orice utilizator Linux.",
+            "descriere": "În acest subiect înveți să creezi, copiezi, muți și ștergi fișiere/directoare, operații de bază pentru orice utilizator Linux.",
             "concepte": [
               {
                 "nume": "mkdir",
@@ -463,7 +463,7 @@
           "titlu": "Utilizatori",
           "lectie": {
             "titlu": "Utilizatori în Linux",
-            "descriere": "Înveți cum se creează utilizatori, cum se schimbă parole și cum verifici identitatea unui user.",
+            "descriere": "Înveți cum se creează utilizatori, cum se schimbă parole și cum verifici identitatea unui utilizator.",
             "concepte": [
               {
                 "nume": "sudo",
@@ -648,7 +648,7 @@
               },
               {
                 "comanda": "grep /bin/bash /etc/passwd",
-                "explicatie": "Filtrează userii cu /bin/bash."
+                "explicatie": "Filtrează utilizatorii cu /bin/bash."
               },
               {
                 "comanda": "ls *.txt | wc -l",
@@ -1622,12 +1622,12 @@
           "exercitii": [
             {
               "id": "s22_1",
-              "cerinta": "Scrie un script care generează un număr random și îl afișează pe ecran.",
+              "cerinta": "Scrie un script care generează un număr aleatoriu și îl afișează pe ecran.",
               "comanda_corecta": ""
             },
             {
               "id": "s22_2",
-              "cerinta": "Modifică scriptul astfel încât să trimită numărul random și în syslog folosind logger.",
+              "cerinta": "Modifică scriptul astfel încât să trimită numărul aleatoriu și în syslog folosind logger.",
               "comanda_corecta": ""
             },
             {
@@ -1957,10 +1957,10 @@
       "skill_uri": [
         {
           "id_skill": 27,
-          "titlu": "Boot process",
+          "titlu": "Proces de pornire",
           "lectie": {
             "titlu": "Procesul de boot",
-            "descriere": "Boot process descrie pașii prin care Linux pornește până ajunge la sistemul utilizabil.",
+            "descriere": "Procesul de pornire descrie pașii prin care Linux pornește până ajunge la sistemul utilizabil.",
             "concepte": [
               {
                 "nume": "systemd",
@@ -2272,7 +2272,7 @@
       "skill_uri": [
         {
           "id_skill": "proiect_1",
-          "titlu": "Script creare utilizatori + parolă random",
+          "titlu": "Script creare utilizatori + parolă aleatorie",
           "lectie": {
             "titlu": "Proiect final: utilizatori și parole",
             "descriere": "Acest proiect integrează administrarea utilizatorilor, grupurilor, parolelor și exportul datelor într-un fișier.",
@@ -2320,7 +2320,7 @@
           "exercitii": [
             {
               "id": "p1_1",
-              "cerinta": "Scrie un script Bash care primește ca input un fișier users.txt (fiecare linie conține: username:group). Pentru fiecare user: creează user-ul, creează grupul dacă nu există, adaugă user-ul în grup, generează o parolă random de 12 caractere, setează parola, forțează schimbarea parolei la primul login, salvează într-un fișier credentials.csv.",
+              "cerinta": "Scrie un script Bash care primește ca input un fișier users.txt (fiecare linie conține: username:group). Pentru fiecare utilizator: creează utilizatorul, creează grupul dacă nu există, adaugă utilizatorul în grup, generează o parolă aleatorie de 12 caractere, setează parola, forțează schimbarea parolei la primul login, salvează într-un fișier credentials.csv.",
               "comanda_corecta": ""
             }
           ]
@@ -2462,7 +2462,7 @@
             "exemple": [
               {
                 "comanda": "grep 'Failed password' /var/log/auth.log",
-                "explicatie": "Găsește loginuri eșuate."
+                "explicatie": "Găsește autentificări eșuate."
               },
               {
                 "comanda": "awk '{print $11}'",
@@ -2481,7 +2481,7 @@
           "exercitii": [
             {
               "id": "p4_1",
-              "cerinta": "Scrie un script care analizează /var/log/auth.log și identifică: IP-urile cu >5 login attempts eșuate, utilizatorii care au încercat login eșuat. Afișează: IP - numar tentative, user - numar tentative.",
+              "cerinta": "Scrie un script care analizează /var/log/auth.log și identifică: IP-urile cu >5 încercări de autentificare eșuate, utilizatorii care au încercat autentificare eșuată. Afișează: IP - număr tentative, utilizator - număr tentative.",
               "comanda_corecta": ""
             }
           ]

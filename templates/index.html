@@ -3,125 +3,133 @@
 <head>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tutor - Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body style="position: relative;">
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
 
-    <div class="meniu-profil-container" style="position: absolute; top: 15px; right: 20px; text-align: right; z-index: 1001;">
-        <button id="butonProfil" style="font-size: 30px; background: none; border: none; cursor: pointer; color: #2c3e50; padding: 0;">
-            &#9776;
-        </button>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
 
-        <div id="fereastraProfil" style="display: none; position: absolute; right: 0; top: 45px; background: white; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0,0,0,0.15); width: 250px; padding: 20px; text-align: center; border: 1px solid #ddd;">
-            
-            <img src="{{ avatar_url }}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 2px solid #2c3e50;">
-            
-            <form action="/upload_avatar" method="POST" enctype="multipart/form-data" style="margin-bottom: 15px;">
-                <label for="file-upload" style="cursor: pointer; font-size: 12px; color: #007bff; text-decoration: underline;">
-                    Schimbă poza
-                </label>
-                <input id="file-upload" type="file" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
-            </form>
-            
-            <h3 style="margin: 0; color: #2c3e50;">{{ session.get('username', 'Utilizator') }}</h3>
-            <p style="margin: 5px 0 15px 0; color: #8ba888; font-weight: bold;"> {{rang}} </p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 15px;">
-
-            <div style="text-align: left; font-size: 14px; color: #555;">
-                <p style="margin: 5px 0;">⭐ <strong>Scor:</strong> <span id="profile-xp">{{ xp }}</span></p>
-                <p style="margin: 5px 0;">🔥 <strong>Strike curent:</strong> {{ strike_curent }} </p>
-                <p style="margin: 5px 0;">🏆 <strong>Record Strike:</strong> {{ record_strike }} </p>
-                <p style="margin: 5px 0;">❤️ <strong>Viață:</strong> <span id="profile-hp">{{ hp }}</span></p>
-                <p style="margin: 5px 0;">🕒 <strong>Ultima logare:</strong> {{ last_date }}</p>
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/exercices">Harta exercițiilor</a>
+                <a href="/logout">Deconectare</a>
             </div>
 
-            <a href="/logout" style="
-                display: block;
-                margin-top: 18px;
-                padding: 10px 15px;
-                background-color: #ff4757;
-                color: white;
-                border-radius: 10px;
-                text-decoration: none;
-                font-weight: bold;
-                font-family: 'Inter', sans-serif;
-            ">
-                Deconectare
-            </a>
-        </div>
-    </div>
+            <div class="profile-wrapper" id="profil">
+                <button id="butonProfil" class="menu-btn" aria-label="Deschide profilul">Profil</button>
 
-    <div class="container" style="margin-top: 50px;">
-        <h1 style="font-family: 'Syne', sans-serif;">AI Tutor Linux</h1>
-        
-        <div style="margin-bottom: 20px;">
-            <a href="/exercices" class="nav-button">Vezi Harta Exercițiilor ⮕</a>
-        </div>
+                <div id="fereastraProfil" class="profile-menu">
+                    <div class="profile-online"><span></span> Activ online</div>
 
-        <section class="card">
-            <div id="chat-box" style="height: 400px; overflow-y: auto; border-bottom: 1px solid #eee; margin-bottom: 20px; padding-bottom: 10px;">
-                <p><strong>AI Tutor:</strong> Salut! Cu ce te pot ajuta astăzi în lumea Linux?</p>
+                    <div class="profile-identity">
+                        <img src="{{ avatar_url }}" alt="" class="profile-avatar">
+
+                        <form action="/upload_avatar" method="POST" enctype="multipart/form-data">
+                            <label for="file-upload" class="avatar-upload">Schimbă poza</label>
+                            <input id="file-upload" type="file" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
+                        </form>
+
+                        <h3 class="profile-name">{{ session.get('username', 'Utilizator') }}</h3>
+                        <p class="profile-rank">{{ rang }}</p>
+                    </div>
+
+                    <div class="profile-stats">
+                        <p><strong><span>⭐</span> Scor</strong> <span id="profile-xp">{{ xp }}</span></p>
+                        <p><strong><span>🔥</span> Strike curent</strong> <span>{{ strike_curent }}</span></p>
+                        <p><strong><span>🏆</span> Record Strike</strong> <span>{{ record_strike }}</span></p>
+                        <p><strong><span>❤️</span> Viață</strong> <span id="profile-hp">{{ hp }}</span></p>
+                        <p><strong><span>🕒</span> Ultima logare</strong> <span>{{ last_date }}</span></p>
+                    </div>
+
+                    <a href="/logout" class="logout-btn">Deconectare</a>
+                </div>
             </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="user-input" placeholder="Scrie un mesaj..." style="flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #ddd;">
-                <button onclick="sendMessage()" style="padding: 10px 20px; background: #111; color: white; border: none; border-radius: 10px; cursor: pointer;">Trimite</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <header class="chat-hero">
+            <div>
+                <span class="eyebrow">Asistent Linux activ</span>
+                <h1 class="page-title">Chat cu <span class="gradient-text">AI Tutor</span></h1>
+                <p class="muted">Întreabă despre comenzi, concepte Linux sau cere explicații pas cu pas.</p>
+            </div>
+            <a href="/exercices" class="nav-button">Continuă exercițiile</a>
+        </header>
+
+        <section class="card chat-panel">
+            <div class="chat-header">
+                <strong>Asistent în terminal</strong>
+                <span class="status-pill">Activ online</span>
+            </div>
+
+            <div id="chat-box" class="chat-box">
+                <div class="message-row ai"><strong>Tutor AI:</strong> Salut! Cu ce te pot ajuta astăzi în universul Linux?</div>
+            </div>
+
+            <div class="chat-composer">
+                <input type="text" id="user-input" class="chat-input" placeholder="Scrie un mesaj...">
+                <button onclick="sendMessage()" class="send-btn">Trimite</button>
             </div>
         </section>
-    </div>
+    </main>
 
     <script>
-        // --- LOGICA PENTRU CHAT ---
+        function escapeHtml(value) {
+            return value
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         async function sendMessage() {
             const input = document.getElementById('user-input');
             const chatBox = document.getElementById('chat-box');
             const userText = input.value.trim();
 
             if (userText !== "") {
-                // 1. Afișăm imediat mesajul tău în interfață
-                chatBox.innerHTML += `<p><strong>Tu:</strong> ${userText}</p>`;
-                input.value = ""; // Curățăm câmpul de text
-                
-                // Auto-scroll la ultimul mesaj
+                chatBox.innerHTML += `<div class="message-row user"><strong>Tu:</strong> ${escapeHtml(userText)}</div>`;
+                input.value = "";
                 chatBox.scrollTop = chatBox.scrollHeight;
 
                 try {
-                    // 2. Trimitem cererea către serverul Flask
                     const response = await fetch('/api/ask', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ 
-                            mode: "translate", 
-                            text: userText 
+                        body: JSON.stringify({
+                            mode: "translate",
+                            text: userText
                         })
                     });
 
                     const data = await response.json();
 
-                    
                     if (data.ok && data.result) {
-                        // Ștergem orice eroare veche din chatBox dacă există
                         chatBox.innerHTML += `<div class="ai-msg"><strong>AI Tutor:</strong> ${marked.parse(data.result)}</div>`;
                     } else {
-                        // Afișăm eroarea DOAR dacă data.ok e false
                         const msgEroare = data.error || data.message || "Eroare necunoscută";
-                        chatBox.innerHTML += `<p style="color: red;"><strong>Eroare:</strong> ${msgEroare}</p>`;
+                        chatBox.innerHTML += `<div class="message-row ai feedback-box error"><strong>Eroare:</strong> ${escapeHtml(msgEroare)}</div>`;
                     }
-
                 } catch (error) {
                     console.error("Eroare la comunicarea cu AI-ul:", error);
-                    chatBox.innerHTML += `<p style="color: red;"><strong>Sistem:</strong> Nu am putut contacta serverul.</p>`;
+                    chatBox.innerHTML += `<div class="message-row ai feedback-box error"><strong>Sistem:</strong> Nu am putut contacta serverul.</div>`;
                 }
 
-                // Auto-scroll din nou după ce apare răspunsul AI-ului
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
-        // Permite trimiterea mesajului cu tasta Enter
         document.getElementById("user-input").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
@@ -129,30 +137,48 @@
             }
         });
 
-        // --- LOGICA PENTRU MENIUL DE PROFIL ---
         const butonProfil = document.getElementById('butonProfil');
         const fereastraProfil = document.getElementById('fereastraProfil');
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        const profileLinks = document.querySelectorAll('[data-profile-toggle]');
 
-        // Când apeși pe cele 3 liniuțe, fereastra apare sau dispare
-        butonProfil.addEventListener('click', function(event) {
-            event.stopPropagation(); // Previne declanșarea evenimentului de click pe fereastră (mai jos)
+        function toggleProfile(event) {
+            event.stopPropagation();
             if (fereastraProfil.style.display === 'none' || fereastraProfil.style.display === '') {
                 fereastraProfil.style.display = 'block';
             } else {
                 fereastraProfil.style.display = 'none';
             }
+        }
+
+        butonProfil.addEventListener('click', toggleProfile);
+
+        profileLinks.forEach(link => {
+            link.addEventListener('click', function(event) {
+                event.preventDefault();
+                toggleProfile(event);
+                navMenu.classList.remove('is-open');
+            });
         });
 
-        // Închide meniul dacă dai click oriunde altundeva pe pagină
+        if (window.location.hash === '#profil') {
+            fereastraProfil.style.display = 'block';
+        }
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
         window.addEventListener('click', function(e) {
             if (!fereastraProfil.contains(e.target) && e.target !== butonProfil) {
                 fereastraProfil.style.display = 'none';
             }
+            if (!navMenu.contains(e.target) && e.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
         });
-
-
-        
-
     </script>
 </body>
 </html>
