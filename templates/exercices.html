@@ -17,6 +17,14 @@
 
         <div class="topbar-actions" data-nav-menu>
             <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
                 <a href="/chat">Tutor AI</a>
                 <a href="/logout">Deconectare</a>
             </div>
@@ -54,6 +62,72 @@
         </section>
     </main>
 
+    <div id="active-break-overlay" class="active-break-overlay" aria-live="polite">
+        <div class="active-break-panel glass-panel">
+            <div class="active-break-stickman" aria-hidden="true">
+                <svg viewBox="0 0 320 320" role="img">
+                    <defs>
+                        <linearGradient id="breakFigureStroke" x1="84" y1="56" x2="236" y2="284" gradientUnits="userSpaceOnUse">
+                            <stop offset="0" stop-color="#ffe0f1" />
+                            <stop offset="0.5" stop-color="#ff80bd" />
+                            <stop offset="1" stop-color="#9c6bff" />
+                        </linearGradient>
+                        <radialGradient id="breakFigureGlow" cx="50%" cy="42%" r="58%">
+                            <stop offset="0" stop-color="#ffb8dc" stop-opacity="0.56" />
+                            <stop offset="0.52" stop-color="#ff7bb8" stop-opacity="0.16" />
+                            <stop offset="1" stop-color="#120815" stop-opacity="0" />
+                        </radialGradient>
+                        <filter id="breakFigureSoftGlow" x="-45%" y="-45%" width="190%" height="190%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feMerge>
+                                <feMergeNode in="blur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    <circle class="break-glow-orb" cx="160" cy="154" r="116" fill="url(#breakFigureGlow)" />
+                    <path class="break-floor" d="M82 266 C116 250 202 250 238 266" />
+
+                    <g class="break-person" filter="url(#breakFigureSoftGlow)">
+                        <circle class="break-head" cx="160" cy="86" r="27" />
+                        <path class="break-spine" d="M160 116 L160 220" />
+
+                        <g class="break-arms-group">
+                            <path class="break-arm left-arm" d="M160 142 C132 148 111 168 100 196" />
+                            <path class="break-arm right-arm" d="M160 142 C188 148 209 168 220 196" />
+                        </g>
+
+                        <g class="break-legs-group">
+                            <path class="break-leg left-leg" d="M160 220 L122 272" />
+                            <path class="break-leg right-leg" d="M160 220 L198 272" />
+                        </g>
+                    </g>
+                </svg>
+            </div>
+
+            <span class="eyebrow">Respiră și revino</span>
+            <h2 class="section-title">Pauză activă</h2>
+            <p class="active-break-copy">Ai consumat toate viețile. Ia o pauză scurtă pentru postură, relaxare și concentrare, apoi revii la exerciții cu energie.</p>
+
+            <div id="active-break-timer" class="active-break-timer">15:00</div>
+
+            <div class="active-break-exercise">
+                <span>Exercițiu recomandat</span>
+                <strong id="active-break-exercise">Rotiri ale umerilor</strong>
+                <small id="active-break-instruction">Ridică umerii lent și rotește-i de 5 ori.</small>
+            </div>
+
+            <ul class="active-break-list">
+                <li>Rotiri ale umerilor</li>
+                <li>Întindere pentru gât</li>
+                <li>Relaxarea încheieturilor</li>
+                <li>Întindere pentru spate</li>
+                <li>Ridică-te și mergi puțin</li>
+            </ul>
+        </div>
+    </div>
+
     <script>
         let openWorlds = new Set();
         let courseData = null;
@@ -65,6 +139,7 @@
         const SERVER_HP = Number("{{ hp|default(5) }}");
         const SERVER_STRIKE = Number("{{ strike_curent|default(0) }}");
         const SERVER_COMPLETED_TASKS = {{ completed_tasks|default([])|tojson }};
+        let cooldownRemaining = Number("{{ cooldown_remaining|default(0) }}");
         const currentStats = {
             hp: SERVER_HP,
             xp: SERVER_XP,
@@ -74,7 +149,6 @@
         const STORAGE_KEYS = {
             completedTasks: `ai_tutor_completed_tasks_user_${USER_ID}`,
             completedLessons: `ai_tutor_completed_lessons_user_${USER_ID}`,
-            exerciseLockTime: `exerciseLockTime_user_${USER_ID}`,
             placementApplied: `placement_applied_user_${USER_ID}`
         };
 
@@ -258,27 +332,27 @@
         };
 
         function startLockout() {
-            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
+            document.body.classList.add('active-break-on');
+            document.getElementById('active-break-overlay').classList.add('is-visible');
+        }
 
-            if (!lockTime) {
-                lockTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-                localStorage.setItem(STORAGE_KEYS.exerciseLockTime, lockTime);
-            }
+        function renderCooldownTimer() {
+            let minutes = Math.floor(Math.max(cooldownRemaining, 0) / 60);
+            let seconds = Math.max(cooldownRemaining, 0) % 60;
+            let displayStr =
+                (minutes < 10 ? "0" + minutes : minutes) + ":" +
+                (seconds < 10 ? "0" + seconds : seconds);
 
-            document.getElementById('course-map').style.display = 'none';
-            document.getElementById('out-of-lives-screen').style.display = 'block';
+            let timerEl = document.getElementById('active-break-timer');
+            if (timerEl) timerEl.innerText = displayStr;
         }
 
         function updateTimerDisplay() {
-            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
-            if (!lockTime) return;
+            if (cooldownRemaining <= 0) return;
 
-            let now = new Date().getTime();
-            let distance = lockTime - now;
+            cooldownRemaining -= 1;
 
-            if (distance <= 0) {
-                localStorage.removeItem(STORAGE_KEYS.exerciseLockTime);
-
+            if (cooldownRemaining <= 0) {
                 fetch('/api/reset_lives', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
@@ -287,6 +361,9 @@
                 .then(data => {
                     if (data.ok) {
                         location.reload();
+                    } else if (data.cooldown_remaining !== undefined) {
+                        cooldownRemaining = Number(data.cooldown_remaining);
+                        renderCooldownTimer();
                     }
                 })
                 .catch(() => {
@@ -296,20 +373,38 @@
                 return;
             }
 
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            let displayStr =
-                (hours < 10 ? "0" + hours : hours) + "h " +
-                (minutes < 10 ? "0" + minutes : minutes) + "m " +
-                (seconds < 10 ? "0" + seconds : seconds) + "s";
-
-            let timerEl = document.getElementById('lock-timer');
-            if (timerEl) timerEl.innerText = displayStr;
+            renderCooldownTimer();
         }
 
         setInterval(updateTimerDisplay, 1000);
+
+        const activeBreakExercises = [
+            { title: "Rotiri ale umerilor", instruction: "Ridică umerii lent și rotește-i de 5 ori." },
+            { title: "Întindere pentru gât", instruction: "Înclină capul ușor spre stânga și dreapta." },
+            { title: "Relaxarea încheieturilor", instruction: "Ține brațele în față și rotește încheieturile lent." },
+            { title: "Întindere pentru spate", instruction: "Întinde brațele și apleacă trunchiul ușor înainte." },
+            { title: "Ridică-te și mergi puțin", instruction: "Fă câțiva pași lenți și respiră adânc." }
+        ];
+        let activeBreakIndex = 0;
+
+        function rotateActiveBreakExercise() {
+            const exerciseEl = document.getElementById('active-break-exercise');
+            const instructionEl = document.getElementById('active-break-instruction');
+            if (!exerciseEl || !instructionEl) return;
+
+            activeBreakIndex = (activeBreakIndex + 1) % activeBreakExercises.length;
+            const exercise = activeBreakExercises[activeBreakIndex];
+            exerciseEl.style.opacity = '0';
+            instructionEl.style.opacity = '0';
+            setTimeout(() => {
+                exerciseEl.innerText = exercise.title;
+                instructionEl.innerText = exercise.instruction;
+                exerciseEl.style.opacity = '1';
+                instructionEl.style.opacity = '1';
+            }, 180);
+        }
+
+        setInterval(rotateActiveBreakExercise, 4200);
 
         function toggleLume(contentId, arrowId) {
             const content = document.getElementById(contentId);
@@ -572,6 +667,13 @@
 
                     const data = await response.json();
 
+                    if (data.cooldown_active) {
+                        cooldownRemaining = Number(data.cooldown_remaining || 900);
+                        startLockout();
+                        renderCooldownTimer();
+                        return;
+                    }
+
                     if (data.error) {
                         feedbackDiv.innerHTML = `<div class="feedback-box error">Eroare: ${escapeHtml(data.error)}</div>`;
                         return;
@@ -602,6 +704,10 @@
                             strikeEl.style.transform = 'scale(1.14)';
                             setTimeout(() => strikeEl.style.transform = 'scale(1)', 300);
                         }
+                    }
+
+                    if (data.cooldown_remaining !== undefined && Number(data.cooldown_remaining) > 0) {
+                        cooldownRemaining = Number(data.cooldown_remaining);
                     }
 
                     exerciseContainer.classList.remove('answer-success', 'answer-error');
@@ -642,9 +748,9 @@
         window.onload = function() {
             GameManager.init();
 
-            let lockTime = localStorage.getItem(STORAGE_KEYS.exerciseLockTime);
-            if (lockTime && new Date().getTime() < lockTime) {
+            if (cooldownRemaining > 0 || currentStats.hp <= 0) {
                 startLockout();
+                renderCooldownTimer();
             } else {
                 loadExercises();
             }

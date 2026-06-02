@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Prieteni</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container social-dashboard">
+        <header class="social-hero">
+            <span class="eyebrow">Rețea de învățare</span>
+            <h1 class="page-title">Prieteni <span class="gradient-text">Linux</span></h1>
+            <p class="muted">Caută colegi, trimite cereri, discută și urmărește progresul împreună.</p>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="social-messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="social-panel">
+            <div class="social-panel-header">
+                <div>
+                    <span class="card-kicker">Caută utilizatori</span>
+                    <h2 class="section-title">Adaugă prieteni</h2>
+                </div>
+            </div>
+            <form action="/friends" method="GET" class="social-search">
+                <input type="text" name="q" value="{{ query }}" placeholder="Caută după username...">
+                <button type="submit">Caută</button>
+            </form>
+
+            {% if query %}
+                <div class="social-card-grid">
+                    {% for user in search_results %}
+                        <article class="social-user-card">
+                            <img src="{{ get_avatar_url(user) }}" alt="Avatar utilizator">
+                            <div>
+                                <h3>{{ user.username }}</h3>
+                                <p>{{ get_rank_for_xp(user.xp) }} · {{ user.xp or 0 }} XP</p>
+                            </div>
+                            <div class="social-actions">
+                                <a href="{{ url_for('public_user_profile', user_id=user.id) }}">Vezi profil</a>
+                                {% if user.id in friend_ids %}
+                                    <span class="social-pill">Prieten</span>
+                                {% elif user.id in pending_sent_ids %}
+                                    <span class="social-pill">Cerere trimisă</span>
+                                {% elif user.id in pending_received_ids %}
+                                    <span class="social-pill">Cerere primită</span>
+                                {% else %}
+                                    <form action="{{ url_for('send_friend_request', user_id=user.id) }}" method="POST">
+                                        <button type="submit">Adaugă prieten</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% else %}
+                        <p class="muted">Nu am găsit utilizatori pentru această căutare.</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="social-grid-two">
+            <article class="social-panel">
+                <div class="social-panel-header">
+                    <div>
+                        <span class="card-kicker">Cereri primite</span>
+                        <h2 class="section-title">Așteaptă răspuns</h2>
+                    </div>
+                </div>
+                <div class="social-list">
+                    {% for request in received_requests %}
+                        <div class="social-list-item">
+                            <img src="{{ get_avatar_url(request) }}" alt="Avatar utilizator">
+                            <div>
+                                <strong>{{ request.username }}</strong>
+                                <span>{{ request.xp or 0 }} XP</span>
+                            </div>
+                            <div class="social-actions">
+                                <form action="{{ url_for('accept_friend_request', request_id=request.id) }}" method="POST">
+                                    <button type="submit">Acceptă</button>
+                                </form>
+                                <form action="{{ url_for('reject_friend_request', request_id=request.id) }}" method="POST">
+                                    <button type="submit" class="subtle">Refuză</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="muted">Nu ai cereri primite.</p>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="social-panel">
+                <div class="social-panel-header">
+                    <div>
+                        <span class="card-kicker">Cereri trimise</span>
+                        <h2 class="section-title">În așteptare</h2>
+                    </div>
+                </div>
+                <div class="social-list">
+                    {% for request in sent_requests %}
+                        <div class="social-list-item">
+                            <img src="{{ get_avatar_url(request) }}" alt="Avatar utilizator">
+                            <div>
+                                <strong>{{ request.username }}</strong>
+                                <span>{{ request.xp or 0 }} XP</span>
+                            </div>
+                            <span class="social-pill">Trimisă</span>
+                        </div>
+                    {% else %}
+                        <p class="muted">Nu ai cereri trimise.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </section>
+
+        <section class="social-panel">
+            <div class="social-panel-header">
+                <div>
+                    <span class="card-kicker">Prietenii mei</span>
+                    <h2 class="section-title">Lista de prieteni</h2>
+                </div>
+            </div>
+            <div class="social-card-grid">
+                {% for friend in friends %}
+                    <article class="social-user-card">
+                        <img src="{{ get_avatar_url(friend) }}" alt="Avatar prieten">
+                        <div>
+                            <h3>{{ friend.username }}</h3>
+                            <p>{{ friend.xp or 0 }} XP · Strike {{ friend.strike_curent or 0 }}</p>
+                        </div>
+                        <div class="social-actions">
+                            <a href="{{ url_for('messages_page', friend_id=friend.id) }}" class="friend-message-link">
+                                Mesaj
+                                {% if unread_by_friend.get(friend.id) %}
+                                    <span class="friend-message-badge">{{ unread_by_friend.get(friend.id) }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{{ url_for('public_user_profile', user_id=friend.id) }}">Vezi profil</a>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="muted">Nu ai prieteni încă. Caută un utilizator și trimite o cerere.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+    </script>
+</body>
+</html>

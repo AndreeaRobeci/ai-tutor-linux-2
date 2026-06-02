@@ -79,5 +79,15 @@ BEGIN
 END
 """)
 
+
+try:
+    cursor.execute("ALTER TABLE users ADD COLUMN cooldown_until TEXT")
+    print("✅ Coloana 'cooldown_until' a fost adăugată!")
+except sqlite3.OperationalError:
+    print("⚠️ Coloana cooldown_until există deja.")
+
+
 conn.commit()
 conn.close()
+
+

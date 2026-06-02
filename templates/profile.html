@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Profil</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container profile-dashboard">
+        <section class="profile-hero-panel">
+            <div class="profile-hero-identity">
+                <div class="profile-avatar-block">
+                    <img src="{{ avatar_url }}" alt="Avatar utilizator" class="profile-dashboard-avatar">
+                    <form action="{{ url_for('upload_avatar') }}" method="POST" enctype="multipart/form-data" class="profile-avatar-form">
+                        <label for="profile-avatar-upload" class="profile-avatar-upload">Schimbă poza</label>
+                        <input id="profile-avatar-upload" type="file" name="avatar" accept="image/*" onchange="this.form.submit()">
+                    </form>
+                </div>
+                <div>
+                    <span class="eyebrow">Dashboard utilizator</span>
+                    <h1 class="profile-dashboard-title">{{ username }}</h1>
+                    <p class="profile-dashboard-rank">{{ rang }}</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="profile-grid">
+            <article class="profile-premium-card progress-card">
+                <div class="card-kicker">Progres exerciții</div>
+                <div class="progress-summary">
+                    <strong>{{ progress_percent }}%</strong>
+                    <span>{{ completed_count }} din {{ total_tasks }} finalizate</span>
+                </div>
+                <div class="profile-progress-bar" aria-label="Progres exerciții">
+                    <span style="width: {{ progress_percent }}%;"></span>
+                </div>
+                {% if next_task %}
+                    <p class="muted profile-next-task">Următorul pas: {{ next_task.categorie }} - {{ next_task.titlu }}</p>
+                {% else %}
+                    <p class="muted profile-next-task">Ai finalizat toate exercițiile disponibile.</p>
+                {% endif %}
+            </article>
+
+            <article class="profile-premium-card highlight-stat">
+                <span>⭐</span>
+                <strong>{{ xp }}</strong>
+                <p>XP acumulat</p>
+            </article>
+
+            <article class="profile-premium-card highlight-stat">
+                <span>❤️</span>
+                <strong>{{ hp }}</strong>
+                <p>Viață disponibilă</p>
+            </article>
+
+            <article class="profile-premium-card highlight-stat">
+                <span>🔥</span>
+                <strong>{{ strike_curent }}</strong>
+                <p>Strike curent</p>
+            </article>
+
+            <article class="profile-premium-card highlight-stat">
+                <span>🏆</span>
+                <strong>{{ record_strike }}</strong>
+                <p>Record strike</p>
+            </article>
+        </section>
+
+        <section class="profile-premium-card gallery-panel">
+            <div class="gallery-header">
+                <div>
+                    <span class="card-kicker">Fotografii personale</span>
+                    <h2 class="section-title">Galeria mea</h2>
+                </div>
+
+                <form action="{{ url_for('upload_gallery_photo') }}" method="POST" enctype="multipart/form-data" class="gallery-upload-form">
+                    <label for="gallery-upload" class="nav-button gallery-upload-button">Adaugă fotografie</label>
+                    <input id="gallery-upload" type="file" name="photo" accept=".jpg,.jpeg,.png,.webp" onchange="this.form.submit()">
+                </form>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="gallery-messages">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <p class="muted gallery-limit">Poți încărca imagini JPG, JPEG, PNG sau WEBP, cu dimensiune maximă de 5 MB.</p>
+
+            {% if gallery_photos %}
+                <div class="gallery-grid">
+                    {% for photo in gallery_photos %}
+                        <figure class="gallery-item">
+                            <button type="button" class="gallery-open" data-gallery-open="{{ photo.url }}" aria-label="Mărește fotografia">
+                                <img src="{{ photo.url }}" alt="Fotografie din galeria mea">
+                            </button>
+                            <form action="{{ url_for('delete_gallery_photo', photo_id=photo.id) }}" method="POST" class="gallery-delete-form">
+                                <button type="submit" class="gallery-delete" aria-label="Șterge fotografia">Șterge</button>
+                            </form>
+                        </figure>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="gallery-empty">
+                    <strong>Nu ai fotografii încărcate.</strong>
+                    <p>Adaugă prima fotografie pentru a construi galeria profilului tău.</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="profile-detail-grid">
+            <article class="profile-premium-card">
+                <h2 class="section-title">Statistici vizuale</h2>
+                <div class="metric-list">
+                    <div>
+                        <span>Rang</span>
+                        <strong>{{ rang }}</strong>
+                    </div>
+                    <div>
+                        <span>Ultima logare</span>
+                        <strong>{{ last_date }}</strong>
+                    </div>
+                    <div>
+                        <span>Exerciții salvate</span>
+                        <strong>{{ completed_tasks|length }}</strong>
+                    </div>
+                </div>
+            </article>
+
+            <article class="profile-premium-card">
+                <h2 class="section-title">Activitate recentă</h2>
+                {% if recent_activity %}
+                    <div class="activity-list">
+                        {% for item in recent_activity %}
+                            <div class="activity-item">
+                                <span>{{ item.tip }}</span>
+                                <strong>{{ item.categorie }} - {{ item.titlu }}</strong>
+                                <p>{{ item.lume }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="muted">Nu există încă exerciții finalizate. Începe cu harta de exerciții.</p>
+                {% endif %}
+            </article>
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const galleryOverlay = document.querySelector('[data-gallery-overlay]');
+            const galleryPreview = document.querySelector('[data-gallery-preview]');
+            const galleryClose = document.querySelector('[data-gallery-close]');
+
+            document.querySelectorAll('[data-gallery-open]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    galleryPreview.src = button.dataset.galleryOpen;
+                    galleryOverlay.classList.add('is-open');
+                });
+            });
+
+            galleryClose.addEventListener('click', function() {
+                galleryOverlay.classList.remove('is-open');
+                galleryPreview.src = '';
+            });
+
+            galleryOverlay.addEventListener('click', function(event) {
+                if (event.target === galleryOverlay) {
+                    galleryOverlay.classList.remove('is-open');
+                    galleryPreview.src = '';
+                }
+            });
+        });
+    </script>
+
+    <div class="gallery-lightbox" data-gallery-overlay aria-hidden="true">
+        <button type="button" class="gallery-lightbox-close" data-gallery-close aria-label="Închide fotografia">Închide</button>
+        <img src="" alt="Fotografie mărită" data-gallery-preview>
+    </div>
+</body>
+</html>

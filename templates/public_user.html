@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Profil public</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+            <a href="/friends" class="nav-message-link">
+                Prieteni
+                {% if social_notification_count %}
+                    <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                {% endif %}
+            </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container social-dashboard">
+        <section class="social-public-profile">
+            <img src="{{ avatar_url }}" alt="Avatar utilizator">
+            <div>
+                <span class="eyebrow">Profil public</span>
+                <h1 class="page-title">{{ public_user.username }}</h1>
+                <p class="profile-dashboard-rank">{{ rang }}</p>
+                <div class="social-public-stats">
+                    <span>{{ public_user.xp or 0 }} XP</span>
+                    <span>Strike {{ public_user.strike_curent or 0 }}</span>
+                    <span>Record {{ public_user.record_strike or 0 }}</span>
+                    <span>{{ completed_count }} exerciții</span>
+                </div>
+                <div class="social-actions">
+                    {% if is_self %}
+                        <a href="/profile">Profilul meu</a>
+                    {% elif is_friend %}
+                        <a href="{{ url_for('messages_page', friend_id=public_user.id) }}">Trimite mesaj</a>
+                        <span class="social-pill">Prieten</span>
+                    {% elif pending_request %}
+                        <span class="social-pill">Cerere în așteptare</span>
+                    {% else %}
+                        <form action="{{ url_for('send_friend_request', user_id=public_user.id) }}" method="POST">
+                            <button type="submit">Adaugă prieten</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="social-panel public-gallery-panel">
+            <div class="social-panel-header">
+                <div>
+                    <span class="card-kicker">Fotografii publice</span>
+                    <h2 class="section-title">Galeria utilizatorului</h2>
+                </div>
+            </div>
+
+            {% if public_gallery_photos %}
+                <div class="public-gallery-grid">
+                    {% for photo in public_gallery_photos %}
+                        <button type="button" class="public-gallery-item" data-public-gallery-open="{{ photo.url }}" aria-label="Mărește fotografia">
+                            <img src="{{ photo.url }}" alt="Fotografie din galeria utilizatorului">
+                        </button>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="gallery-empty">
+                    <strong>Acest utilizator nu a adăugat încă fotografii.</strong>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.querySelector('[data-public-gallery-overlay]');
+            const preview = document.querySelector('[data-public-gallery-preview]');
+            const close = document.querySelector('[data-public-gallery-close]');
+
+            document.querySelectorAll('[data-public-gallery-open]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    preview.src = button.dataset.publicGalleryOpen;
+                    overlay.classList.add('is-open');
+                });
+            });
+
+            close.addEventListener('click', function() {
+                overlay.classList.remove('is-open');
+                preview.src = '';
+            });
+
+            overlay.addEventListener('click', function(event) {
+                if (event.target === overlay) {
+                    overlay.classList.remove('is-open');
+                    preview.src = '';
+                }
+            });
+        });
+    </script>
+
+    <div class="gallery-lightbox" data-public-gallery-overlay aria-hidden="true">
+        <button type="button" class="gallery-lightbox-close" data-public-gallery-close aria-label="Închide fotografia">Închide</button>
+        <img src="" alt="Fotografie mărită" data-public-gallery-preview>
+    </div>
+</body>
+</html>

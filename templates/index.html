@@ -18,38 +18,16 @@
 
         <div class="topbar-actions" data-nav-menu>
             <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
                 <a href="/exercices">Harta exercițiilor</a>
                 <a href="/logout">Deconectare</a>
-            </div>
-
-            <div class="profile-wrapper" id="profil">
-                <button id="butonProfil" class="menu-btn" aria-label="Deschide profilul">Profil</button>
-
-                <div id="fereastraProfil" class="profile-menu">
-                    <div class="profile-online"><span></span> Activ online</div>
-
-                    <div class="profile-identity">
-                        <img src="{{ avatar_url }}" alt="" class="profile-avatar">
-
-                        <form action="/upload_avatar" method="POST" enctype="multipart/form-data">
-                            <label for="file-upload" class="avatar-upload">Schimbă poza</label>
-                            <input id="file-upload" type="file" name="avatar" accept="image/*" style="display: none;" onchange="this.form.submit()">
-                        </form>
-
-                        <h3 class="profile-name">{{ session.get('username', 'Utilizator') }}</h3>
-                        <p class="profile-rank">{{ rang }}</p>
-                    </div>
-
-                    <div class="profile-stats">
-                        <p><strong><span>⭐</span> Scor</strong> <span id="profile-xp">{{ xp }}</span></p>
-                        <p><strong><span>🔥</span> Strike curent</strong> <span>{{ strike_curent }}</span></p>
-                        <p><strong><span>🏆</span> Record Strike</strong> <span>{{ record_strike }}</span></p>
-                        <p><strong><span>❤️</span> Viață</strong> <span id="profile-hp">{{ hp }}</span></p>
-                        <p><strong><span>🕒</span> Ultima logare</strong> <span>{{ last_date }}</span></p>
-                    </div>
-
-                    <a href="/logout" class="logout-btn">Deconectare</a>
-                </div>
             </div>
         </div>
     </nav>
@@ -71,7 +49,7 @@
             </div>
 
             <div id="chat-box" class="chat-box">
-                <div class="message-row ai"><strong>Tutor AI:</strong> Salut! Cu ce te pot ajuta astăzi în universul Linux?</div>
+                <div class="message-row ai"><strong>AI Tutor:</strong> Salut! Cu ce te pot ajuta astăzi în universul Linux?</div>
             </div>
 
             <div class="chat-composer">
@@ -137,34 +115,8 @@
             }
         });
 
-        const butonProfil = document.getElementById('butonProfil');
-        const fereastraProfil = document.getElementById('fereastraProfil');
         const navToggle = document.querySelector('[data-nav-toggle]');
         const navMenu = document.querySelector('[data-nav-menu]');
-        const profileLinks = document.querySelectorAll('[data-profile-toggle]');
-
-        function toggleProfile(event) {
-            event.stopPropagation();
-            if (fereastraProfil.style.display === 'none' || fereastraProfil.style.display === '') {
-                fereastraProfil.style.display = 'block';
-            } else {
-                fereastraProfil.style.display = 'none';
-            }
-        }
-
-        butonProfil.addEventListener('click', toggleProfile);
-
-        profileLinks.forEach(link => {
-            link.addEventListener('click', function(event) {
-                event.preventDefault();
-                toggleProfile(event);
-                navMenu.classList.remove('is-open');
-            });
-        });
-
-        if (window.location.hash === '#profil') {
-            fereastraProfil.style.display = 'block';
-        }
 
         navToggle.addEventListener('click', function(event) {
             event.stopPropagation();
@@ -172,9 +124,6 @@
         });
 
         window.addEventListener('click', function(e) {
-            if (!fereastraProfil.contains(e.target) && e.target !== butonProfil) {
-                fereastraProfil.style.display = 'none';
-            }
             if (!navMenu.contains(e.target) && e.target !== navToggle) {
                 navMenu.classList.remove('is-open');
             }

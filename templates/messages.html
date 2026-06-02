@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Mesaje</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/profile">Profil</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container social-dashboard">
+        <section class="social-chat-panel">
+            <header class="social-chat-header">
+                <img src="{{ friend_avatar_url }}" alt="Avatar prieten">
+                <div>
+                    <span class="card-kicker">Conversație privată</span>
+                    <h1>{{ friend.username }}</h1>
+                </div>
+            </header>
+
+            <div class="social-chat-box">
+                {% for item in conversation %}
+                    <div class="social-message-row {% if item.sender_id == current_user_id %}mine{% else %}theirs{% endif %}">
+                        <p>{{ item.message }}</p>
+                        <span>{{ item.created_at }}</span>
+                    </div>
+                {% else %}
+                    <p class="muted">Nu există mesaje încă. Trimite primul mesaj.</p>
+                {% endfor %}
+            </div>
+
+            <form action="{{ url_for('send_message', friend_id=friend.id) }}" method="POST" class="social-composer">
+                <input type="text" name="message" placeholder="Scrie un mesaj..." required>
+                <button type="submit">Trimite</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+    </script>
+</body>
+</html>

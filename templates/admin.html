@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Administrare</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="admin-body">
+    <nav class="app-topbar admin-topbar">
+        <a href="/admin" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>Admin AI Tutor</span>
+        </a>
+
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/admin">Dashboard</a>
+            <a href="/friends" class="nav-message-link">
+                Prieteni
+                {% if social_notification_count %}
+                    <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                {% endif %}
+            </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="admin-shell">
+        <header class="admin-hero">
+            <div>
+                <span class="admin-eyebrow">Administrare platformă</span>
+                <h1>Panou administrativ</h1>
+                <p>Gestionează utilizatorii, rolurile și progresul platformei AI Tutor Linux.</p>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="admin-messages">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="admin-metrics" aria-label="Statistici platformă">
+            <article>
+                <span>Total utilizatori</span>
+                <strong>{{ stats.total_users or 0 }}</strong>
+            </article>
+            <article>
+                <span>Utilizatori activi</span>
+                <strong>{{ stats.active_users or 0 }}</strong>
+            </article>
+            <article>
+                <span>XP total platformă</span>
+                <strong>{{ stats.total_xp or 0 }}</strong>
+            </article>
+            <article>
+                <span>Exerciții completate total</span>
+                <strong>{{ total_completed_tasks or 0 }}</strong>
+            </article>
+            <article>
+                <span>Utilizatori fără vieți</span>
+                <strong>{{ stats.zero_hp_users or 0 }}</strong>
+            </article>
+        </section>
+
+        <section class="admin-panel">
+            <div class="admin-panel-title">
+                <div>
+                    <span>Gestionare utilizatori</span>
+                    <h2>Conturi platformă</h2>
+                </div>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-table admin-users-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>XP</th>
+                            <th>HP</th>
+                            <th>Strike</th>
+                            <th>Ultima logare</th>
+                            <th>Rol</th>
+                            <th>Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td><strong>{{ user.username }}</strong></td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.xp or 0 }}</td>
+                                <td>{{ user.hp or 0 }}</td>
+                                <td>{{ user.strike_curent or 0 }}</td>
+                                <td>{{ user.last_date or "N/A" }}</td>
+                                <td><span class="admin-role">{{ user.role or "user" }}</span></td>
+                                <td>
+                                    <div class="admin-actions">
+                                        <form action="{{ url_for('admin_delete_user', user_id=user.id) }}" method="POST">
+                                            <button type="submit" class="danger" {% if user.id == current_user_id %}disabled{% endif %}>Șterge utilizator</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_reset_user_xp', user_id=user.id) }}" method="POST">
+                                            <button type="submit">Reset XP</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_reset_user_hp', user_id=user.id) }}" method="POST">
+                                            <button type="submit">Reset HP</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_reset_user_strike', user_id=user.id) }}" method="POST">
+                                            <button type="submit">Reset Strike</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_reset_user_progress', user_id=user.id) }}" method="POST">
+                                            <button type="submit">Reset progres</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_set_user_role', user_id=user.id, role='admin') }}" method="POST">
+                                            <button type="submit" {% if user.role == "admin" %}disabled{% endif %}>Promovează la Admin</button>
+                                        </form>
+                                        <form action="{{ url_for('admin_set_user_role', user_id=user.id, role='user') }}" method="POST">
+                                            <button type="submit" {% if user.role != "admin" or user.id == current_user_id %}disabled{% endif %}>Retrogradează la User</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+    </script>
+</body>
+</html>

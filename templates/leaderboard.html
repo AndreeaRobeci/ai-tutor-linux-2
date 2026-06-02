@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tutor - Clasament</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav class="app-topbar">
+        <a href="/chat" class="brand">
+            <span class="brand-mark">$_</span>
+            <span>AI Tutor Linux</span>
+        </a>
+        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
+        <div class="topbar-actions" data-nav-menu>
+            <div class="topbar-nav">
+                <a href="/profile">Profil</a>
+                <a href="/friends" class="nav-message-link">
+                    Prieteni
+                    {% if social_notification_count %}
+                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
+                    {% endif %}
+                </a>
+                <a href="/leaderboard">Clasament</a>
+                <a href="/exercices">Exerciții</a>
+                <a href="/chat">Tutor AI</a>
+                <a href="/logout">Deconectare</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container social-dashboard">
+        <header class="social-hero">
+            <span class="eyebrow">Competiție între prieteni</span>
+            <h1 class="page-title">Clasament <span class="gradient-text">XP</span></h1>
+            <p class="muted">Poziția ta și progresul prietenilor, ordonate după XP.</p>
+        </header>
+
+        <section class="social-panel">
+            <div class="leaderboard-list">
+                {% for entry in entries %}
+                    <article class="leaderboard-row {% if entry.id == current_user_id %}is-current{% endif %}">
+                        <div class="leaderboard-position {% if loop.index <= 3 %}top{% endif %}">#{{ loop.index }}</div>
+                        <img src="{{ get_avatar_url(entry) }}" alt="Avatar utilizator">
+                        <div class="leaderboard-user">
+                            <strong>{{ entry.username }}</strong>
+                            <span>{{ get_rank_for_xp(entry.xp) }}</span>
+                        </div>
+                        <div class="leaderboard-stats">
+                            <span>{{ entry.xp or 0 }} XP</span>
+                            <span>Strike {{ entry.strike_curent or 0 }}</span>
+                            <span>Record {{ entry.record_strike or 0 }}</span>
+                        </div>
+                    </article>
+                {% else %}
+                    <p class="muted">Nu există date de clasament.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        navToggle.addEventListener('click', function(event) {
+            event.stopPropagation();
+            navMenu.classList.toggle('is-open');
+        });
+        window.addEventListener('click', function(event) {
+            if (!navMenu.contains(event.target) && event.target !== navToggle) {
+                navMenu.classList.remove('is-open');
+            }
+        });
+    </script>
+</body>
+</html>
