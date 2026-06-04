@@ -28,6 +28,9 @@
                 <a href="/leaderboard">Clasament</a>
                 <a href="/exercices">Exerciții</a>
                 <a href="/chat">Tutor AI</a>
+                {% if current_user_is_admin %}
+                    <a href="/admin">Admin</a>
+                {% endif %}
                 <a href="/logout">Deconectare</a>
             </div>
         </div>

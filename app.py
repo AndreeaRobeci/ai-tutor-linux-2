@@ -390,6 +390,10 @@ def user_needs_onboarding():
     return onboarding_completed != 1
 
 
+def normalize_role(role):
+    return (role or '').strip().lower()
+
+
 def current_user_is_admin():
     if 'user_id' not in session:
         return False
@@ -402,7 +406,10 @@ def current_user_is_admin():
     if not user:
         session.clear()
         return False
-    return bool(user and user['role'] == 'admin')
+
+    role = normalize_role(user['role'])
+    session['role'] = role
+    return role == 'admin'
 
 
 def get_session_user():
@@ -418,6 +425,7 @@ def get_session_user():
         session.clear()
         return None
 
+    session['role'] = normalize_role(user['role'])
     return user
 
 
@@ -425,7 +433,7 @@ def require_admin_access():
     user = get_session_user()
     if not user:
         return redirect(url_for('login'))
-    if user['role'] != 'admin':
+    if normalize_role(user['role']) != 'admin':
         return redirect(url_for('chat_page'))
     return None
 
@@ -537,7 +545,8 @@ def inject_message_notifications():
             'unread_message_count': 0,
             'pending_friend_request_count': 0,
             'social_notification_count': 0,
-            'latest_unread_sender_id': None
+            'latest_unread_sender_id': None,
+            'current_user_is_admin': False
         }
 
     unread_count = get_unread_message_count(session['user_id'])
@@ -546,7 +555,8 @@ def inject_message_notifications():
         'unread_message_count': unread_count,
         'pending_friend_request_count': pending_friend_count,
         'social_notification_count': unread_count + pending_friend_count,
-        'latest_unread_sender_id': get_latest_unread_sender_id(session['user_id']) if unread_count else None
+        'latest_unread_sender_id': get_latest_unread_sender_id(session['user_id']) if unread_count else None,
+        'current_user_is_admin': current_user_is_admin()
     }
 
 
@@ -624,6 +634,7 @@ def login():
             db.execute('UPDATE users SET last_date = %s WHERE id = %s', (timp_acum, user['id']))
             db.commit()
             session['username'] = user['username']
+            session['role'] = normalize_role(user['role'])
             session['onboarding_completed'] = 1 if int(user['onboarding_completed'] or 0) == 1 else 0
             if session['onboarding_completed'] == 0:
                 return redirect_to_onboarding(user['id'], user['username'])
@@ -661,6 +672,7 @@ def register():
 
         session['user_id'] = user_id
         session['username'] = username
+        session['role'] = 'user'
         session['onboarding_completed'] = 0
         session['pending_user_id'] = user_id
         session['pending_username'] = username
@@ -1658,7 +1670,7 @@ def admin_toggle_user_role(user_id):
     db = get_db()
     user = db.execute('SELECT role FROM users WHERE id = %s', (user_id,)).fetchone()
     if user:
-        new_role = 'admin' if user['role'] != 'admin' else 'user'
+        new_role = 'admin' if normalize_role(user['role']) != 'admin' else 'user'
         db.execute('UPDATE users SET role = %s WHERE id = %s', (new_role, user_id))
         db.commit()
         flash('Rolul utilizatorului a fost actualizat.')
