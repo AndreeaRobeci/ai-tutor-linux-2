@@ -535,7 +535,7 @@ def redirect_to_onboarding(user_id, username=None):
     return redirect(url_for('onboarding'))
 
 
-init_db()
+
 
 
 @app.before_request
