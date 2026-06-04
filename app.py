@@ -430,6 +430,17 @@ def get_session_user():
     return user
 
 
+def get_current_template_user():
+    user = get_session_user()
+    if not user:
+        return None
+    return {
+        'id': user['id'],
+        'username': user['username'],
+        'role': normalize_role(user['role'])
+    }
+
+
 def require_admin_access():
     user = get_session_user()
     if not user:
@@ -465,10 +476,36 @@ def row_value(row, key, default=None):
     return default
 
 
+def file_exists_static(path):
+    if not path:
+        return False
+
+    normalized_path = os.path.normpath(path)
+    if os.path.isabs(normalized_path):
+        return False
+
+    static_dir = os.path.join(BASE_DIR, 'static')
+    full_path = os.path.abspath(os.path.join(static_dir, normalized_path))
+    static_root = os.path.abspath(static_dir)
+
+    if os.path.commonpath([static_root, full_path]) != static_root:
+        return False
+
+    return os.path.isfile(full_path)
+
+
 def upload_file_exists(folder, filename):
     if not filename:
         return False
-    return os.path.isfile(os.path.join(BASE_DIR, folder, filename))
+
+    static_dir = os.path.abspath(os.path.join(BASE_DIR, 'static'))
+    folder_path = os.path.abspath(os.path.join(BASE_DIR, folder))
+
+    if os.path.commonpath([static_dir, folder_path]) != static_dir:
+        return False
+
+    relative_folder = os.path.relpath(folder_path, static_dir)
+    return file_exists_static(os.path.join(relative_folder, filename))
 
 
 def svg_data_url(svg):
@@ -508,9 +545,13 @@ def gallery_placeholder_response():
 
 def get_avatar_url(user):
     avatar = row_value(user, 'avatar')
-    if upload_file_exists(app.config['UPLOAD_FOLDER'], avatar):
+    if avatar and file_exists_static(os.path.join('avatars', avatar)):
         return url_for('static', filename=f"avatars/{avatar}")
     return get_default_avatar_url(user)
+
+
+def avatar_url(user):
+    return get_avatar_url(user)
 
 
 def are_friends(db, user_id, friend_id):
@@ -592,25 +633,41 @@ def get_latest_unread_sender_id(user_id):
 
 
 @app.context_processor
-def inject_message_notifications():
-    if 'user_id' not in session:
-        return {
-            'unread_message_count': 0,
-            'pending_friend_request_count': 0,
-            'social_notification_count': 0,
-            'latest_unread_sender_id': None,
-            'current_user_is_admin': False
-        }
-
-    unread_count = get_unread_message_count(session['user_id'])
-    pending_friend_count = get_pending_friend_request_count(session['user_id'])
-    return {
-        'unread_message_count': unread_count,
-        'pending_friend_request_count': pending_friend_count,
-        'social_notification_count': unread_count + pending_friend_count,
-        'latest_unread_sender_id': get_latest_unread_sender_id(session['user_id']) if unread_count else None,
-        'current_user_is_admin': current_user_is_admin()
+def inject_global_template_context():
+    context = {
+        'current_user': None,
+        'current_user_is_admin': False,
+        'unread_message_count': 0,
+        'pending_friend_request_count': 0,
+        'social_notification_count': 0,
+        'latest_unread_sender_id': None
     }
+
+    if 'user_id' not in session:
+        return context
+
+    current_user = get_current_template_user()
+    if not current_user:
+        return context
+
+    context['current_user'] = current_user
+    context['current_user_is_admin'] = current_user['role'] == 'admin'
+
+    try:
+        unread_count = get_unread_message_count(current_user['id'])
+        pending_friend_count = get_pending_friend_request_count(current_user['id'])
+        context.update({
+            'unread_message_count': unread_count,
+            'pending_friend_request_count': pending_friend_count,
+            'social_notification_count': unread_count + pending_friend_count,
+            'latest_unread_sender_id': get_latest_unread_sender_id(current_user['id']) if unread_count else None
+        })
+    except Exception:
+        db = getattr(g, '_database', None)
+        if db is not None:
+            db.rollback()
+
+    return context
 
 
 def redirect_to_onboarding(user_id, username=None):

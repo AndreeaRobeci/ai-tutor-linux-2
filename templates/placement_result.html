@@ -8,24 +8,7 @@
 </head>
 
 <body>
-    <nav class="app-topbar">
-        <a href="/chat" class="brand">
-            <span class="brand-mark">$_</span>
-            <span>AI Tutor Linux</span>
-        </a>
-
-        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
-
-        <div class="topbar-actions" data-nav-menu>
-            <div class="topbar-nav">
-                <a href="/chat">Acasă</a>
-                <a href="/exercices">Exerciții</a>
-                <a href="/chat">Tutor AI</a>
-                <a href="/chat#profil">Profil</a>
-                <a href="/logout">Deconectare</a>
-            </div>
-        </div>
-    </nav>
+    {% include '_nav.html' %}
 
     <main class="center-shell">
         <section class="result-card">

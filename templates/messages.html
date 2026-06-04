@@ -7,28 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <nav class="app-topbar">
-        <a href="/chat" class="brand">
-            <span class="brand-mark">$_</span>
-            <span>AI Tutor Linux</span>
-        </a>
-        <button class="nav-toggle" type="button" data-nav-toggle aria-label="Deschide navigația">☰</button>
-        <div class="topbar-actions" data-nav-menu>
-            <div class="topbar-nav">
-                <a href="/friends" class="nav-message-link">
-                    Prieteni
-                    {% if social_notification_count %}
-                        <span class="nav-unread-badge">{{ social_notification_count }}</span>
-                    {% endif %}
-                </a>
-                <a href="/leaderboard">Clasament</a>
-                <a href="/profile">Profil</a>
-                <a href="/exercices">Exerciții</a>
-                <a href="/chat">Tutor AI</a>
-                <a href="/logout">Deconectare</a>
-            </div>
-        </div>
-    </nav>
+    {% include '_nav.html' %}
 
     <main class="container social-dashboard">
         <section class="social-chat-panel">
