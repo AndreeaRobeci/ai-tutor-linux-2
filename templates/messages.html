@@ -52,7 +52,7 @@
             </div>
 
             <form action="{{ url_for('send_message', friend_id=friend.id) }}" method="POST" class="social-composer">
-                <input type="text" name="message" placeholder="Scrie un mesaj..." required>
+                <input type="text" name="message" placeholder="Scrie un mesaj..." required data-message-input>
                 <button type="submit">Trimite</button>
             </form>
         </section>
@@ -70,6 +70,15 @@
                 navMenu.classList.remove('is-open');
             }
         });
+
+        setInterval(function() {
+            const messageInput = document.querySelector('[data-message-input]');
+            const isWriting = messageInput && (document.activeElement === messageInput || messageInput.value.trim() !== '');
+            const menuOpen = navMenu.classList.contains('is-open');
+            if (!isWriting && !menuOpen && document.visibilityState === 'visible') {
+                window.location.reload();
+            }
+        }, 4000);
     </script>
 </body>
 </html>

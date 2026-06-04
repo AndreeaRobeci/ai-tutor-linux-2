@@ -1103,14 +1103,37 @@ def friends():
 
     if query:
         search_query = " ".join(query.split())
+        search_words = search_query.split()
+        word_filters = " AND ".join(["username ILIKE %s"] * len(search_words))
+        name_filter = "username ILIKE %s"
+        search_params = [f'%{search_query}%']
+        if word_filters:
+            name_filter = f"({name_filter} OR ({word_filters}))"
+            search_params.extend([f'%{word}%' for word in search_words])
+
         search_results = db.execute(
-            '''SELECT id, username, avatar, xp, strike_curent, record_strike
+            f'''SELECT id, username, avatar, xp, strike_curent, record_strike
                FROM users
                WHERE id != %s
-               AND username ILIKE %s
+               AND {name_filter}
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM friendships f
+                   WHERE (f.user_id = %s AND f.friend_id = users.id)
+                   OR (f.friend_id = %s AND f.user_id = users.id)
+               )
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM friend_requests fr
+                   WHERE fr.status = 'pending'
+                   AND (
+                       (fr.sender_id = %s AND fr.receiver_id = users.id)
+                       OR (fr.receiver_id = %s AND fr.sender_id = users.id)
+                   )
+               )
                ORDER BY username ASC
                LIMIT 12''',
-            (user_id, f'%{search_query}%')
+            (user_id, *search_params, user_id, user_id, user_id, user_id)
         ).fetchall()
 
     received_requests = db.execute(
