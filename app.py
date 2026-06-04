@@ -5,10 +5,13 @@ from groq import Groq
 from pdf_loader import load_pdf_text
 import os
 import json
-import sqlite3
 import threading
 import webbrowser
 import uuid
+import psycopg2
+import psycopg2.errors
+from psycopg2 import IntegrityError
+from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -26,7 +29,7 @@ app.config['GALLERY_UPLOAD_FOLDER'] = os.path.join('static', 'uploads', 'gallery
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['GALLERY_UPLOAD_FOLDER'], exist_ok=True)
 app.secret_key = 'super_secret_ai_tutor_key'
-DATABASE = os.path.join(BASE_DIR, 'database.db')
+DATABASE_URL = os.environ.get('DATABASE_URL')
 ALLOWED_GALLERY_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 MAX_GALLERY_PHOTO_SIZE = 5 * 1024 * 1024
 ALLOWED_AVATAR_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
@@ -62,12 +65,34 @@ def open_in_chrome(url):
     webbrowser.open(url)
 
 # --- LOGICĂ BAZĂ DE DATE ---
+class PostgresDB:
+    def __init__(self, connection):
+        self.connection = connection
+
+    def execute(self, query, params=None):
+        cursor = self.connection.cursor()
+        cursor.execute(query, params or ())
+        return cursor
+
+    def commit(self):
+        self.connection.commit()
+
+    def rollback(self):
+        self.connection.rollback()
+
+    def close(self):
+        self.connection.close()
+
+
 def get_db():
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise RuntimeError('DATABASE_URL nu este setat în variabilele de mediu.')
+
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row
-        db.execute('PRAGMA foreign_keys = ON')
+        connection = psycopg2.connect(database_url, cursor_factory=RealDictCursor)
+        db = g._database = PostgresDB(connection)
     return db
 
 
@@ -142,7 +167,7 @@ def refresh_lives_after_24h(db, user):
         return False
 
     db.execute(
-        'UPDATE users SET hp = ?, cooldown_until = NULL WHERE id = ?',
+        'UPDATE users SET hp = %s, cooldown_until = NULL WHERE id = %s',
         (5, user['id'])
     )
     return True
@@ -158,7 +183,7 @@ def init_db():
     with app.app_context():
         db = get_db()
         db.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
@@ -180,112 +205,76 @@ def init_db():
         ensure_onboarding_column(db)
         db.execute("UPDATE users SET role = 'user' WHERE role IS NULL OR role = ''")
         db.execute('UPDATE users SET onboarding_completed = 0 WHERE onboarding_completed IS NULL')
-        db.execute('DROP TRIGGER IF EXISTS delete_completed_tasks_after_user_delete')
         ensure_completed_tasks_table(db)
         ensure_user_photos_table(db)
         ensure_social_tables(db)
-        db.execute('''CREATE TRIGGER delete_completed_tasks_after_user_delete
-            AFTER DELETE ON users
-            BEGIN
-                DELETE FROM completed_tasks WHERE user_id = OLD.id;
-            END''')
         db.commit()
 
 
 def ensure_column(db, table_name, column_name, definition):
-    columns = [row['name'] for row in db.execute(f'PRAGMA table_info({table_name})').fetchall()]
+    columns = [
+        row['column_name']
+        for row in db.execute(
+            '''SELECT column_name
+               FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = %s''',
+            (table_name,)
+        ).fetchall()
+    ]
     if column_name not in columns:
         db.execute(f'ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}')
 
 
 def ensure_onboarding_column(db):
-    columns = db.execute('PRAGMA table_info(users)').fetchall()
-    column_names = [row['name'] for row in columns]
+    columns = db.execute(
+        '''SELECT column_name, column_default, is_nullable
+           FROM information_schema.columns
+           WHERE table_schema = 'public' AND table_name = %s''',
+        ('users',)
+    ).fetchall()
+    column_names = [row['column_name'] for row in columns]
 
     if 'onboarding_completed' not in column_names:
         db.execute('ALTER TABLE users ADD COLUMN onboarding_completed INTEGER NOT NULL DEFAULT 0')
         return
 
-    onboarding_column = next(row for row in columns if row['name'] == 'onboarding_completed')
-    current_default = str(onboarding_column['dflt_value'] or '').strip().strip("'\"()")
-    if current_default == '0' and onboarding_column['notnull'] == 1:
-        return
-
-    db.execute('ALTER TABLE users RENAME TO users_onboarding_migration')
-    db.execute('''CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        hp INTEGER DEFAULT 5,
-        xp INTEGER DEFAULT 0,
-        streak INTEGER DEFAULT 0,
-        last_date TEXT,
-        avatar TEXT,
-        strike_curent INTEGER DEFAULT 0,
-        record_strike INTEGER DEFAULT 0,
-        start_world INTEGER DEFAULT 1,
-        onboarding_completed INTEGER NOT NULL DEFAULT 0,
-        cooldown_until TEXT,
-        role TEXT DEFAULT 'user')''')
-
-    target_columns = [
-        'id',
-        'username',
-        'email',
-        'password',
-        'hp',
-        'xp',
-        'streak',
-        'last_date',
-        'avatar',
-        'strike_curent',
-        'record_strike',
-        'start_world',
-        'onboarding_completed',
-        'cooldown_until',
-        'role',
-    ]
-    defaults = {
-        'hp': '5',
-        'xp': '0',
-        'streak': '0',
-        'last_date': 'NULL',
-        'avatar': 'NULL',
-        'strike_curent': '0',
-        'record_strike': '0',
-        'start_world': '1',
-        'onboarding_completed': '0',
-        'cooldown_until': 'NULL',
-        'role': "'user'",
-    }
-    select_values = []
-    for column in target_columns:
-        if column == 'onboarding_completed' and column in column_names:
-            select_values.append('COALESCE(onboarding_completed, 0)')
-        elif column in column_names:
-            select_values.append(column)
-        else:
-            select_values.append(defaults[column])
-
-    db.execute(
-        f"INSERT INTO users ({', '.join(target_columns)}) "
-        f"SELECT {', '.join(select_values)} FROM users_onboarding_migration"
-    )
-    db.execute('DROP TABLE users_onboarding_migration')
+    onboarding_column = next(row for row in columns if row['column_name'] == 'onboarding_completed')
+    db.execute('UPDATE users SET onboarding_completed = 0 WHERE onboarding_completed IS NULL')
+    if onboarding_column['column_default'] != '0':
+        db.execute('ALTER TABLE users ALTER COLUMN onboarding_completed SET DEFAULT 0')
+    if onboarding_column['is_nullable'] == 'YES':
+        db.execute('ALTER TABLE users ALTER COLUMN onboarding_completed SET NOT NULL')
 
 
 def ensure_completed_tasks_table(db):
     table_exists = db.execute(
-        "SELECT COUNT(1) AS count FROM sqlite_master WHERE type = 'table' AND name = 'completed_tasks'"
+        '''SELECT COUNT(1) AS count
+           FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'completed_tasks' '''
     ).fetchone()['count'] == 1
 
     needs_rebuild = not table_exists
     if table_exists:
-        columns = db.execute('PRAGMA table_info(completed_tasks)').fetchall()
-        column_names = [row['name'] for row in columns]
-        foreign_keys = db.execute('PRAGMA foreign_key_list(completed_tasks)').fetchall()
-        fk_points_to_users = any(row['table'] == 'users' for row in foreign_keys)
+        columns = db.execute(
+            '''SELECT column_name
+               FROM information_schema.columns
+               WHERE table_schema = 'public' AND table_name = 'completed_tasks' '''
+        ).fetchall()
+        column_names = [row['column_name'] for row in columns]
+        foreign_keys = db.execute(
+            '''SELECT ccu.table_name
+               FROM information_schema.table_constraints tc
+               JOIN information_schema.key_column_usage kcu
+                 ON tc.constraint_name = kcu.constraint_name
+                AND tc.table_schema = kcu.table_schema
+               JOIN information_schema.constraint_column_usage ccu
+                 ON ccu.constraint_name = tc.constraint_name
+                AND ccu.table_schema = tc.table_schema
+               WHERE tc.constraint_type = 'FOREIGN KEY'
+                 AND tc.table_schema = 'public'
+                 AND tc.table_name = 'completed_tasks' '''
+        ).fetchall()
+        fk_points_to_users = any(row['table_name'] == 'users' for row in foreign_keys)
         required_columns = {'user_id', 'task_id'}
         needs_rebuild = not required_columns.issubset(column_names) or not fk_points_to_users
 
@@ -301,51 +290,59 @@ def ensure_completed_tasks_table(db):
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)''')
 
     if needs_rebuild and table_exists:
-        old_columns = [row['name'] for row in db.execute('PRAGMA table_info(completed_tasks_migration)').fetchall()]
+        old_columns = [
+            row['column_name']
+            for row in db.execute(
+                '''SELECT column_name
+                   FROM information_schema.columns
+                   WHERE table_schema = 'public' AND table_name = 'completed_tasks_migration' '''
+            ).fetchall()
+        ]
         if {'user_id', 'task_id'}.issubset(old_columns):
-            db.execute('''INSERT OR IGNORE INTO completed_tasks (user_id, task_id)
+            db.execute('''INSERT INTO completed_tasks (user_id, task_id)
                 SELECT user_id, task_id
                 FROM completed_tasks_migration
                 WHERE task_id IS NOT NULL
-                AND user_id IN (SELECT id FROM users)''')
+                AND user_id IN (SELECT id FROM users)
+                ON CONFLICT DO NOTHING''')
         db.execute('DROP TABLE completed_tasks_migration')
 
 
 def ensure_user_photos_table(db):
     db.execute('''CREATE TABLE IF NOT EXISTS user_photos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
         filename TEXT NOT NULL,
-        uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE)''')
 
 
 def ensure_social_tables(db):
     db.execute('''CREATE TABLE IF NOT EXISTS friend_requests (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         sender_id INTEGER NOT NULL,
         receiver_id INTEGER NOT NULL,
         status TEXT DEFAULT 'pending',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE)''')
     db.execute('''CREATE UNIQUE INDEX IF NOT EXISTS idx_friend_requests_pair_pending
         ON friend_requests(sender_id, receiver_id)
         WHERE status = 'pending' ''')
     db.execute('''CREATE TABLE IF NOT EXISTS friendships (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL,
         friend_id INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE,
         UNIQUE(user_id, friend_id))''')
     db.execute('''CREATE TABLE IF NOT EXISTS messages (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id SERIAL PRIMARY KEY,
         sender_id INTEGER NOT NULL,
         receiver_id INTEGER NOT NULL,
         message TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_read INTEGER DEFAULT 0,
         FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE)''')
@@ -354,7 +351,7 @@ def ensure_social_tables(db):
 def get_onboarding_completed(user_id):
     db = get_db()
     user = db.execute(
-        'SELECT onboarding_completed FROM users WHERE id = ?',
+        'SELECT onboarding_completed FROM users WHERE id = %s',
         (user_id,)
     ).fetchone()
     if user is None:
@@ -378,7 +375,7 @@ def user_needs_onboarding():
 
     db = get_db()
     user = db.execute(
-        'SELECT onboarding_completed FROM users WHERE id = ?',
+        'SELECT onboarding_completed FROM users WHERE id = %s',
         (session['user_id'],)
     ).fetchone()
 
@@ -400,7 +397,7 @@ def current_user_is_admin():
 
     db = get_db()
     user = db.execute(
-        'SELECT role FROM users WHERE id = ?',
+        'SELECT role FROM users WHERE id = %s',
         (session['user_id'],)
     ).fetchone()
     return bool(user and user['role'] == 'admin')
@@ -441,7 +438,7 @@ def are_friends(db, user_id, friend_id):
         return False
 
     friendship = db.execute(
-        'SELECT 1 FROM friendships WHERE user_id = ? AND friend_id = ?',
+        'SELECT 1 FROM friendships WHERE user_id = %s AND friend_id = %s',
         (user_id, friend_id)
     ).fetchone()
     return friendship is not None
@@ -449,13 +446,15 @@ def are_friends(db, user_id, friend_id):
 
 def get_completed_count(db, user_id):
     table_exists = db.execute(
-        "SELECT COUNT(1) AS count FROM sqlite_master WHERE type = 'table' AND name = 'completed_tasks'"
+        '''SELECT COUNT(1) AS count
+           FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'completed_tasks' '''
     ).fetchone()['count'] == 1
     if not table_exists:
         return 0
 
     return db.execute(
-        'SELECT COUNT(*) AS count FROM completed_tasks WHERE user_id = ?',
+        'SELECT COUNT(*) AS count FROM completed_tasks WHERE user_id = %s',
         (user_id,)
     ).fetchone()['count']
 
@@ -469,7 +468,7 @@ def get_unread_message_count(user_id):
     return db.execute(
         '''SELECT COUNT(*) AS count
            FROM messages
-           WHERE receiver_id = ? AND is_read = 0''',
+           WHERE receiver_id = %s AND is_read = 0''',
         (user_id,)
     ).fetchone()['count']
 
@@ -483,7 +482,7 @@ def get_pending_friend_request_count(user_id):
     return db.execute(
         '''SELECT COUNT(*) AS count
            FROM friend_requests
-           WHERE receiver_id = ? AND status = 'pending' ''',
+           WHERE receiver_id = %s AND status = 'pending' ''',
         (user_id,)
     ).fetchone()['count']
 
@@ -501,7 +500,7 @@ def get_latest_unread_sender_id(user_id):
     row = db.execute(
         '''SELECT sender_id
            FROM messages
-           WHERE receiver_id = ? AND is_read = 0
+           WHERE receiver_id = %s AND is_read = 0
            ORDER BY created_at DESC, id DESC
            LIMIT 1''',
         (user_id,)
@@ -595,12 +594,12 @@ def login():
         username = request.form['username']
         password = request.form['password']
         db = get_db()
-        user = db.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        user = db.execute('SELECT * FROM users WHERE username = %s', (username,)).fetchone()
         if user and check_password_hash(user['password'], password):
             session['user_id'] = user['id']
             timp_acum = datetime.now().strftime("%d-%m-%Y %H:%M")
             refresh_lives_after_24h(db, user)
-            db.execute('UPDATE users SET last_date = ? WHERE id = ?', (timp_acum, user['id']))
+            db.execute('UPDATE users SET last_date = %s WHERE id = %s', (timp_acum, user['id']))
             db.commit()
             session['username'] = user['username']
             session['onboarding_completed'] = 1 if int(user['onboarding_completed'] or 0) == 1 else 0
@@ -622,12 +621,13 @@ def register():
         hashed_pw = generate_password_hash(password)
 
         cursor = db.execute(
-            'INSERT INTO users (username, email, password, start_world, onboarding_completed) VALUES (?, ?, ?, ?, ?)',
+            '''INSERT INTO users (username, email, password, start_world, onboarding_completed)
+               VALUES (%s, %s, %s, %s, %s)
+               RETURNING id''',
             (username, email, hashed_pw, 1, 0)
         )
+        user_id = cursor.fetchone()['id']
         db.commit()
-
-        user_id = cursor.lastrowid
 
         session['user_id'] = user_id
         session['username'] = username
@@ -637,7 +637,7 @@ def register():
 
         return redirect(url_for('onboarding'))
 
-    except sqlite3.IntegrityError:
+    except IntegrityError:
         db.rollback()
         flash('Nume de utilizator sau email deja existent!')
         return redirect(url_for('login'))
@@ -673,7 +673,7 @@ def set_level_beginner():
     user_id = session['user_id']
 
     db.execute(
-        'UPDATE users SET onboarding_completed = ?, start_world = ? WHERE id = ?',
+        'UPDATE users SET onboarding_completed = %s, start_world = %s WHERE id = %s',
         (1, 1, user_id)
     )
     db.commit()
@@ -716,14 +716,14 @@ def submit_placement_test():
     db = get_db()
 
     db.execute(
-        'UPDATE users SET onboarding_completed = ?, start_world = ?, xp = ? WHERE id = ?',
+        'UPDATE users SET onboarding_completed = %s, start_world = %s, xp = %s WHERE id = %s',
         (1, start_world, xp_bonus, user_id)
     )
 
     for task_id in skipped_tasks:
         try:
             db.execute(
-                'INSERT OR IGNORE INTO completed_tasks (user_id, task_id) VALUES (?, ?)',
+                'INSERT INTO completed_tasks (user_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
                 (user_id, task_id)
             )
         except:
@@ -751,7 +751,7 @@ def forgot_password():
     if request.method == 'POST':
         email = request.form['email']
         db = get_db()
-        user = db.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+        user = db.execute('SELECT * FROM users WHERE email = %s', (email,)).fetchone()
         if user:
             token = generate_reset_token(email)
             reset_url = url_for('reset_with_token', token=token, _external=True)
@@ -790,7 +790,7 @@ def reset_with_token(token):
         new_pw = request.form['password']
         hashed = generate_password_hash(new_pw)
         db = get_db()
-        db.execute('UPDATE users SET password = ? WHERE email = ?', (hashed, email))
+        db.execute('UPDATE users SET password = %s WHERE email = %s', (hashed, email))
         db.commit()
         flash('Parola a fost schimbată!')
         return redirect(url_for('login'))
@@ -833,20 +833,14 @@ def upload_avatar():
         filename = f"user_{session['user_id']}_{uuid.uuid4().hex}.{extension}"
         
         file.save(os.path.join(BASE_DIR, app.config['UPLOAD_FOLDER'], filename))
-        
-        import sqlite3
-        conn = sqlite3.connect('database.db')
-        cursor = conn.cursor()
-        
-        # Dacă nu există coloana 'avatar' în baza de date, o creăm automat acum
-        try:
-            cursor.execute("UPDATE users SET avatar = ? WHERE id = ?", (filename, session['user_id']))
-        except sqlite3.OperationalError:
-            cursor.execute("ALTER TABLE users ADD COLUMN avatar TEXT")
-            cursor.execute("UPDATE users SET avatar = ? WHERE id = ?", (filename, session['user_id']))
-            
-        conn.commit()
-        conn.close()
+
+        db = get_db()
+        ensure_column(db, 'users', 'avatar', 'TEXT')
+        db.execute(
+            "UPDATE users SET avatar = %s WHERE id = %s",
+            (filename, session['user_id'])
+        )
+        db.commit()
         
     return redirect(url_for('profile'))
 
@@ -859,7 +853,7 @@ def gallery_photo(photo_id):
     db = get_db()
     ensure_user_photos_table(db)
     photo = db.execute(
-        'SELECT filename FROM user_photos WHERE id = ? AND user_id = ?',
+        'SELECT filename FROM user_photos WHERE id = %s AND user_id = %s',
         (photo_id, session['user_id'])
     ).fetchone()
 
@@ -880,7 +874,7 @@ def public_gallery_photo(photo_id):
     db = get_db()
     ensure_user_photos_table(db)
     photo = db.execute(
-        'SELECT filename FROM user_photos WHERE id = ?',
+        'SELECT filename FROM user_photos WHERE id = %s',
         (photo_id,)
     ).fetchone()
 
@@ -927,7 +921,7 @@ def upload_gallery_photo():
     db = get_db()
     ensure_user_photos_table(db)
     db.execute(
-        'INSERT INTO user_photos (user_id, filename) VALUES (?, ?)',
+        'INSERT INTO user_photos (user_id, filename) VALUES (%s, %s)',
         (session['user_id'], filename)
     )
     db.commit()
@@ -945,7 +939,7 @@ def delete_gallery_photo(photo_id):
     db = get_db()
     ensure_user_photos_table(db)
     photo = db.execute(
-        'SELECT filename FROM user_photos WHERE id = ? AND user_id = ?',
+        'SELECT filename FROM user_photos WHERE id = %s AND user_id = %s',
         (photo_id, session['user_id'])
     ).fetchone()
 
@@ -957,7 +951,7 @@ def delete_gallery_photo(photo_id):
             except OSError:
                 pass
         db.execute(
-            'DELETE FROM user_photos WHERE id = ? AND user_id = ?',
+            'DELETE FROM user_photos WHERE id = %s AND user_id = %s',
             (photo_id, session['user_id'])
         )
         db.commit()
@@ -973,30 +967,27 @@ def chat_page():
         return redirect_to_onboarding(session['user_id'], session.get('username'))
         
     user_id = session['user_id']
-    
-    import sqlite3
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
-    
+
+    db = get_db()
     try:
-        
-        cursor.execute("SELECT xp, hp, strike_curent, record_strike, last_date, avatar, cooldown_until FROM users WHERE id = ?", (user_id,))
-        user_data = cursor.fetchone()
-    except sqlite3.OperationalError:
+        user_data = db.execute(
+            "SELECT xp, hp, strike_curent, record_strike, last_date, avatar, cooldown_until FROM users WHERE id = %s",
+            (user_id,)
+        ).fetchone()
+    except Exception:
+        db.rollback()
         user_data = None
-        
-    conn.close()
-    
+
     if user_data:
         # 2. AICI AM MODIFICAT: ordinea se schimbă pentru că am adăugat un element nou în SELECT
-        xp = user_data[0] if user_data[0] is not None else 0
-        hp = user_data[1] if user_data[1] is not None else 5
-        strike_curent = user_data[2] if user_data[2] is not None else 0
-        record_strike = user_data[3] if user_data[3] is not None else 0
-        last_date = user_data[4] if user_data[4] is not None else "N/A"
+        xp = user_data['xp'] if user_data['xp'] is not None else 0
+        hp = user_data['hp'] if user_data['hp'] is not None else 5
+        strike_curent = user_data['strike_curent'] if user_data['strike_curent'] is not None else 0
+        record_strike = user_data['record_strike'] if user_data['record_strike'] is not None else 0
+        last_date = user_data['last_date'] if user_data['last_date'] is not None else "N/A"
         
         # Avatarul este acum pe poziția [5]
-        avatar_db = user_data[5] if len(user_data) > 5 and user_data[5] else None
+        avatar_db = user_data['avatar'] if user_data.get('avatar') else None
         if avatar_db:
             avatar_url = f"/static/avatars/{avatar_db}"
         else:
@@ -1084,8 +1075,8 @@ def friends():
         search_results = db.execute(
             '''SELECT id, username, avatar, xp, strike_curent, record_strike
                FROM users
-               WHERE id != ?
-               AND username LIKE ?
+               WHERE id != %s
+               AND username LIKE %s
                ORDER BY username ASC
                LIMIT 12''',
             (user_id, f'%{query}%')
@@ -1095,7 +1086,7 @@ def friends():
         '''SELECT fr.id, fr.created_at, u.id AS user_id, u.username, u.avatar, u.xp
            FROM friend_requests fr
            JOIN users u ON u.id = fr.sender_id
-           WHERE fr.receiver_id = ? AND fr.status = 'pending'
+           WHERE fr.receiver_id = %s AND fr.status = 'pending'
            ORDER BY fr.created_at DESC''',
         (user_id,)
     ).fetchall()
@@ -1103,7 +1094,7 @@ def friends():
         '''SELECT fr.id, fr.created_at, u.id AS user_id, u.username, u.avatar, u.xp
            FROM friend_requests fr
            JOIN users u ON u.id = fr.receiver_id
-           WHERE fr.sender_id = ? AND fr.status = 'pending'
+           WHERE fr.sender_id = %s AND fr.status = 'pending'
            ORDER BY fr.created_at DESC''',
         (user_id,)
     ).fetchall()
@@ -1111,7 +1102,7 @@ def friends():
         '''SELECT u.id, u.username, u.avatar, u.xp, u.strike_curent, u.record_strike
            FROM friendships f
            JOIN users u ON u.id = f.friend_id
-           WHERE f.user_id = ?
+           WHERE f.user_id = %s
            ORDER BY u.username ASC''',
         (user_id,)
     ).fetchall()
@@ -1123,7 +1114,7 @@ def friends():
         for row in db.execute(
             '''SELECT sender_id, COUNT(*) AS unread_count
                FROM messages
-               WHERE receiver_id = ? AND is_read = 0
+               WHERE receiver_id = %s AND is_read = 0
                GROUP BY sender_id''',
             (user_id,)
         ).fetchall()
@@ -1158,7 +1149,7 @@ def send_friend_request(user_id):
         flash('Nu îți poți trimite cerere de prietenie singur.')
         return redirect(url_for('friends'))
 
-    target_user = db.execute('SELECT id FROM users WHERE id = ?', (user_id,)).fetchone()
+    target_user = db.execute('SELECT id FROM users WHERE id = %s', (user_id,)).fetchone()
     if not target_user:
         flash('Utilizatorul nu există.')
         return redirect(url_for('friends'))
@@ -1170,7 +1161,7 @@ def send_friend_request(user_id):
     existing_pending = db.execute(
         '''SELECT id FROM friend_requests
            WHERE status = 'pending'
-           AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))''',
+           AND ((sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s))''',
         (current_user_id, user_id, user_id, current_user_id)
     ).fetchone()
     if existing_pending:
@@ -1178,7 +1169,7 @@ def send_friend_request(user_id):
         return redirect(url_for('friends'))
 
     db.execute(
-        'INSERT INTO friend_requests (sender_id, receiver_id) VALUES (?, ?)',
+        'INSERT INTO friend_requests (sender_id, receiver_id) VALUES (%s, %s)',
         (current_user_id, user_id)
     )
     db.commit()
@@ -1197,20 +1188,20 @@ def accept_friend_request(request_id):
     friend_request = db.execute(
         '''SELECT id, sender_id, receiver_id
            FROM friend_requests
-           WHERE id = ? AND receiver_id = ? AND status = 'pending' ''',
+           WHERE id = %s AND receiver_id = %s AND status = 'pending' ''',
         (request_id, session['user_id'])
     ).fetchone()
     if not friend_request:
         flash('Cererea nu poate fi acceptată.')
         return redirect(url_for('friends'))
 
-    db.execute("UPDATE friend_requests SET status = 'accepted' WHERE id = ?", (request_id,))
+    db.execute("UPDATE friend_requests SET status = 'accepted' WHERE id = %s", (request_id,))
     db.execute(
-        'INSERT OR IGNORE INTO friendships (user_id, friend_id) VALUES (?, ?)',
+        'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
         (friend_request['receiver_id'], friend_request['sender_id'])
     )
     db.execute(
-        'INSERT OR IGNORE INTO friendships (user_id, friend_id) VALUES (?, ?)',
+        'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
         (friend_request['sender_id'], friend_request['receiver_id'])
     )
     db.commit()
@@ -1229,7 +1220,7 @@ def reject_friend_request(request_id):
     updated = db.execute(
         '''UPDATE friend_requests
            SET status = 'rejected'
-           WHERE id = ? AND receiver_id = ? AND status = 'pending' ''',
+           WHERE id = %s AND receiver_id = %s AND status = 'pending' ''',
         (request_id, session['user_id'])
     ).rowcount
     db.commit()
@@ -1248,7 +1239,7 @@ def public_user_profile(user_id):
     user = db.execute(
         '''SELECT id, username, avatar, xp, strike_curent, record_strike, start_world
            FROM users
-           WHERE id = ?''',
+           WHERE id = %s''',
         (user_id,)
     ).fetchone()
     if not user:
@@ -1261,14 +1252,14 @@ def public_user_profile(user_id):
         '''SELECT id, sender_id, receiver_id
            FROM friend_requests
            WHERE status = 'pending'
-           AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))''',
+           AND ((sender_id = %s AND receiver_id = %s) OR (sender_id = %s AND receiver_id = %s))''',
         (current_user_id, user_id, user_id, current_user_id)
     ).fetchone()
     completed_count = get_completed_count(db, user_id)
     photo_rows = db.execute(
         '''SELECT id, filename, uploaded_at
            FROM user_photos
-           WHERE user_id = ?
+           WHERE user_id = %s
            ORDER BY uploaded_at DESC, id DESC''',
         (user_id,)
     ).fetchall()
@@ -1309,22 +1300,22 @@ def messages_page(friend_id):
         return redirect(url_for('friends'))
 
     friend = db.execute(
-        'SELECT id, username, avatar FROM users WHERE id = ?',
+        'SELECT id, username, avatar FROM users WHERE id = %s',
         (friend_id,)
     ).fetchone()
     if not friend:
         return redirect(url_for('friends'))
 
     db.execute(
-        'UPDATE messages SET is_read = 1 WHERE sender_id = ? AND receiver_id = ? AND is_read = 0',
+        'UPDATE messages SET is_read = 1 WHERE sender_id = %s AND receiver_id = %s AND is_read = 0',
         (friend_id, user_id)
     )
     db.commit()
     conversation = db.execute(
         '''SELECT id, sender_id, receiver_id, message, created_at
            FROM messages
-           WHERE (sender_id = ? AND receiver_id = ?)
-           OR (sender_id = ? AND receiver_id = ?)
+           WHERE (sender_id = %s AND receiver_id = %s)
+           OR (sender_id = %s AND receiver_id = %s)
            ORDER BY created_at ASC, id ASC''',
         (user_id, friend_id, friend_id, user_id)
     ).fetchall()
@@ -1354,7 +1345,7 @@ def send_message(friend_id):
     message = request.form.get('message', '').strip()
     if message:
         db.execute(
-            'INSERT INTO messages (sender_id, receiver_id, message) VALUES (?, ?, ?)',
+            'INSERT INTO messages (sender_id, receiver_id, message) VALUES (%s, %s, %s)',
             (user_id, friend_id, message)
         )
         db.commit()
@@ -1374,9 +1365,9 @@ def leaderboard():
     rows = db.execute(
         '''SELECT id, username, avatar, xp, strike_curent, record_strike
            FROM users
-           WHERE id = ?
+           WHERE id = %s
            OR id IN (
-               SELECT friend_id FROM friendships WHERE user_id = ?
+               SELECT friend_id FROM friendships WHERE user_id = %s
            )
            ORDER BY xp DESC, record_strike DESC, strike_curent DESC, username ASC''',
         (user_id, user_id)
@@ -1393,7 +1384,9 @@ def leaderboard():
 
 def get_user_completed_counts(db):
     table_exists = db.execute(
-        "SELECT COUNT(1) AS count FROM sqlite_master WHERE type = 'table' AND name = 'completed_tasks'"
+        '''SELECT COUNT(1) AS count
+           FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'completed_tasks' '''
     ).fetchone()['count'] == 1
 
     if not table_exists:
@@ -1409,7 +1402,9 @@ def get_user_completed_counts(db):
 
 def get_total_completed_tasks(db):
     table_exists = db.execute(
-        "SELECT COUNT(1) AS count FROM sqlite_master WHERE type = 'table' AND name = 'completed_tasks'"
+        '''SELECT COUNT(1) AS count
+           FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'completed_tasks' '''
     ).fetchone()['count'] == 1
 
     if not table_exists:
@@ -1421,7 +1416,7 @@ def get_total_completed_tasks(db):
 def delete_user_gallery_files(db, user_id):
     ensure_user_photos_table(db)
     photos = db.execute(
-        'SELECT filename FROM user_photos WHERE user_id = ?',
+        'SELECT filename FROM user_photos WHERE user_id = %s',
         (user_id,)
     ).fetchall()
 
@@ -1482,12 +1477,12 @@ def admin_delete_user(user_id):
 
     db = get_db()
     delete_user_gallery_files(db, user_id)
-    db.execute('DELETE FROM completed_tasks WHERE user_id = ?', (user_id,))
-    db.execute('DELETE FROM user_photos WHERE user_id = ?', (user_id,))
-    db.execute('DELETE FROM friend_requests WHERE sender_id = ? OR receiver_id = ?', (user_id, user_id))
-    db.execute('DELETE FROM friendships WHERE user_id = ? OR friend_id = ?', (user_id, user_id))
-    db.execute('DELETE FROM messages WHERE sender_id = ? OR receiver_id = ?', (user_id, user_id))
-    db.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    db.execute('DELETE FROM completed_tasks WHERE user_id = %s', (user_id,))
+    db.execute('DELETE FROM user_photos WHERE user_id = %s', (user_id,))
+    db.execute('DELETE FROM friend_requests WHERE sender_id = %s OR receiver_id = %s', (user_id, user_id))
+    db.execute('DELETE FROM friendships WHERE user_id = %s OR friend_id = %s', (user_id, user_id))
+    db.execute('DELETE FROM messages WHERE sender_id = %s OR receiver_id = %s', (user_id, user_id))
+    db.execute('DELETE FROM users WHERE id = %s', (user_id,))
     db.commit()
     flash('Utilizatorul a fost șters.')
     return redirect(url_for('admin'))
@@ -1500,7 +1495,7 @@ def admin_reset_user_xp(user_id):
         return redirect_response
 
     db = get_db()
-    db.execute('UPDATE users SET xp = 0 WHERE id = ?', (user_id,))
+    db.execute('UPDATE users SET xp = 0 WHERE id = %s', (user_id,))
     db.commit()
     flash('XP-ul utilizatorului a fost resetat.')
     return redirect(url_for('admin'))
@@ -1513,7 +1508,7 @@ def admin_reset_user_hp(user_id):
         return redirect_response
 
     db = get_db()
-    db.execute('UPDATE users SET hp = 5 WHERE id = ?', (user_id,))
+    db.execute('UPDATE users SET hp = 5 WHERE id = %s', (user_id,))
     db.commit()
     flash('HP-ul utilizatorului a fost resetat.')
     return redirect(url_for('admin'))
@@ -1527,7 +1522,7 @@ def admin_reset_user_strike(user_id):
 
     db = get_db()
     db.execute(
-        'UPDATE users SET strike_curent = 0, record_strike = 0 WHERE id = ?',
+        'UPDATE users SET strike_curent = 0, record_strike = 0 WHERE id = %s',
         (user_id,)
     )
     db.commit()
@@ -1542,7 +1537,7 @@ def admin_reset_user_onboarding(user_id):
         return redirect_response
 
     db = get_db()
-    db.execute('UPDATE users SET onboarding_completed = 0 WHERE id = ?', (user_id,))
+    db.execute('UPDATE users SET onboarding_completed = 0 WHERE id = %s', (user_id,))
     db.commit()
     flash('Onboarding-ul utilizatorului a fost resetat.')
     return redirect(url_for('admin'))
@@ -1556,7 +1551,7 @@ def admin_reset_user_progress(user_id):
 
     db = get_db()
     ensure_completed_tasks_table(db)
-    db.execute('DELETE FROM completed_tasks WHERE user_id = ?', (user_id,))
+    db.execute('DELETE FROM completed_tasks WHERE user_id = %s', (user_id,))
     db.commit()
     flash('Progresul utilizatorului a fost resetat.')
     return redirect(url_for('admin'))
@@ -1573,10 +1568,10 @@ def admin_toggle_user_role(user_id):
         return redirect(url_for('admin'))
 
     db = get_db()
-    user = db.execute('SELECT role FROM users WHERE id = ?', (user_id,)).fetchone()
+    user = db.execute('SELECT role FROM users WHERE id = %s', (user_id,)).fetchone()
     if user:
         new_role = 'admin' if user['role'] != 'admin' else 'user'
-        db.execute('UPDATE users SET role = ? WHERE id = ?', (new_role, user_id))
+        db.execute('UPDATE users SET role = %s WHERE id = %s', (new_role, user_id))
         db.commit()
         flash('Rolul utilizatorului a fost actualizat.')
 
@@ -1598,7 +1593,7 @@ def admin_set_user_role(user_id, role):
         return redirect(url_for('admin'))
 
     db = get_db()
-    db.execute('UPDATE users SET role = ? WHERE id = ?', (role, user_id))
+    db.execute('UPDATE users SET role = %s WHERE id = %s', (role, user_id))
     db.commit()
     flash('Rolul utilizatorului a fost actualizat.')
     return redirect(url_for('admin'))
@@ -1616,7 +1611,7 @@ def profile():
     user = db.execute(
         '''SELECT username, xp, hp, strike_curent, record_strike, last_date, avatar
            FROM users
-           WHERE id = ?''',
+           WHERE id = %s''',
         (session['user_id'],)
     ).fetchone()
 
@@ -1639,7 +1634,7 @@ def profile():
 
     task_catalog, ordered_task_ids = build_task_catalog()
     completed_task_rows = db.execute(
-        'SELECT task_id FROM completed_tasks WHERE user_id = ?',
+        'SELECT task_id FROM completed_tasks WHERE user_id = %s',
         (session['user_id'],)
     ).fetchall()
     completed_tasks = [row['task_id'] for row in completed_task_rows]
@@ -1650,7 +1645,7 @@ def profile():
     progress_percent = round((completed_count / total_tasks) * 100) if total_tasks else 0
 
     recent_rows = db.execute(
-        'SELECT task_id FROM completed_tasks WHERE user_id = ? ORDER BY rowid DESC LIMIT 5',
+        'SELECT task_id FROM completed_tasks WHERE user_id = %s ORDER BY task_id DESC LIMIT 5',
         (session['user_id'],)
     ).fetchall()
     recent_activity = []
@@ -1669,7 +1664,7 @@ def profile():
     photo_rows = db.execute(
         '''SELECT id, filename, uploaded_at
            FROM user_photos
-           WHERE user_id = ?
+           WHERE user_id = %s
            ORDER BY uploaded_at DESC, id DESC''',
         (session['user_id'],)
     ).fetchall()
@@ -1713,7 +1708,7 @@ def exercices():
     
     db = get_db()
     user = db.execute(
-        'SELECT xp, hp, strike_curent, record_strike, start_world, last_date, avatar, cooldown_until FROM users WHERE id = ?',
+        'SELECT xp, hp, strike_curent, record_strike, start_world, last_date, avatar, cooldown_until FROM users WHERE id = %s',
         (session['user_id'],)
     ).fetchone()
     
@@ -1733,14 +1728,14 @@ def exercices():
             strike_curent = 0
             cooldown_until = None
             db.execute(
-                'UPDATE users SET hp = ?, strike_curent = ?, cooldown_until = NULL WHERE id = ?',
+                'UPDATE users SET hp = %s, strike_curent = %s, cooldown_until = NULL WHERE id = %s',
                 (hp, strike_curent, session['user_id'])
             )
             db.commit()
         else:
             cooldown_until = create_cooldown()
             db.execute(
-                'UPDATE users SET cooldown_until = ? WHERE id = ?',
+                'UPDATE users SET cooldown_until = %s WHERE id = %s',
                 (cooldown_until, session['user_id'])
             )
             db.commit()
@@ -1756,12 +1751,12 @@ def exercices():
     if start_world > 1:
         for task_id in get_skipped_task_ids(start_world):
             db.execute(
-                'INSERT OR IGNORE INTO completed_tasks (user_id, task_id) VALUES (?, ?)',
+                'INSERT INTO completed_tasks (user_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
                 (session['user_id'], task_id)
             )
         db.commit()
     completed_task_rows = db.execute(
-        'SELECT task_id FROM completed_tasks WHERE user_id = ?',
+        'SELECT task_id FROM completed_tasks WHERE user_id = %s',
         (session['user_id'],)
     ).fetchall()
     completed_tasks = [row['task_id'] for row in completed_task_rows]
@@ -1889,20 +1884,20 @@ def check_answer():
         user_id = session['user_id']
         
         # Extragem noile coloane în loc de streak
-        user = db.execute('SELECT xp, hp, strike_curent, record_strike, cooldown_until FROM users WHERE id = ?', (user_id,)).fetchone()
+        user = db.execute('SELECT xp, hp, strike_curent, record_strike, cooldown_until FROM users WHERE id = %s', (user_id,)).fetchone()
         cooldown_remaining = active_cooldown_seconds(user['cooldown_until'])
         if user['hp'] is not None and user['hp'] <= 0 and cooldown_remaining <= 0:
             if user['cooldown_until']:
                 db.execute(
-                    'UPDATE users SET hp = ?, strike_curent = ?, cooldown_until = NULL WHERE id = ?',
+                    'UPDATE users SET hp = %s, strike_curent = %s, cooldown_until = NULL WHERE id = %s',
                     (5, 0, user_id)
                 )
                 db.commit()
-                user = db.execute('SELECT xp, hp, strike_curent, record_strike, cooldown_until FROM users WHERE id = ?', (user_id,)).fetchone()
+                user = db.execute('SELECT xp, hp, strike_curent, record_strike, cooldown_until FROM users WHERE id = %s', (user_id,)).fetchone()
             else:
                 cooldown_until = create_cooldown()
                 db.execute(
-                    'UPDATE users SET cooldown_until = ? WHERE id = ?',
+                    'UPDATE users SET cooldown_until = %s WHERE id = %s',
                     (cooldown_until, user_id)
                 )
                 db.commit()
@@ -1924,7 +1919,7 @@ def check_answer():
         already_completed = False
         if task_id:
             already_completed = db.execute(
-                'SELECT 1 FROM completed_tasks WHERE user_id = ? AND task_id = ?',
+                'SELECT 1 FROM completed_tasks WHERE user_id = %s AND task_id = %s',
                 (user_id, str(task_id))
             ).fetchone() is not None
 
@@ -1950,11 +1945,11 @@ def check_answer():
 
         # Salvăm noile statistici în baza de date
         cooldown_until = create_cooldown() if hp <= 0 else None
-        db.execute('UPDATE users SET xp = ?, hp = ?, strike_curent = ?, record_strike = ?, cooldown_until = ? WHERE id = ?',
+        db.execute('UPDATE users SET xp = %s, hp = %s, strike_curent = %s, record_strike = %s, cooldown_until = %s WHERE id = %s',
                    (xp, hp, strike_curent, record_strike, cooldown_until, user_id))
         if este_corect and task_id and not already_completed:
             db.execute(
-                'INSERT OR IGNORE INTO completed_tasks (user_id, task_id) VALUES (?, ?)',
+                'INSERT INTO completed_tasks (user_id, task_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
                 (user_id, str(task_id))
             )
         db.commit()
@@ -1984,7 +1979,7 @@ def reset_lives():
 
     db = get_db()
     user = db.execute(
-        'SELECT cooldown_until FROM users WHERE id = ?',
+        'SELECT cooldown_until FROM users WHERE id = %s',
         (session['user_id'],)
     ).fetchone()
     if user and active_cooldown_seconds(user['cooldown_until']) > 0:
@@ -1995,7 +1990,7 @@ def reset_lives():
         }), 423
 
     db.execute(
-        'UPDATE users SET hp = ?, strike_curent = ?, cooldown_until = NULL WHERE id = ?',
+        'UPDATE users SET hp = %s, strike_curent = %s, cooldown_until = NULL WHERE id = %s',
         (5, 0, session['user_id'])
     )
     db.commit()
@@ -2010,4 +2005,4 @@ def reset_lives():
 if __name__ == "__main__":
     init_db()
     threading.Timer(1.0, open_in_chrome, args=("http://127.0.0.1:5000",)).start()
-    app.run(host="127.0.0.1", port=5000, debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
