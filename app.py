@@ -8,12 +8,13 @@ import json
 import threading
 import webbrowser
 import uuid
+import requests
 import psycopg2
 from psycopg2 import IntegrityError
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 
 from datetime import datetime, timedelta
 
@@ -30,6 +31,9 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['GALLERY_UPLOAD_FOLDER'], exist_ok=True)
 app.secret_key = 'super_secret_ai_tutor_key'
 DATABASE_URL = os.environ.get('DATABASE_URL')
+SUPABASE_URL = (os.environ.get('SUPABASE_URL') or '').rstrip('/')
+SUPABASE_STORAGE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_ANON_KEY')
+SUPABASE_STORAGE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET')
 ALLOWED_GALLERY_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 MAX_GALLERY_PHOTO_SIZE = 5 * 1024 * 1024
 ALLOWED_AVATAR_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
@@ -494,6 +498,60 @@ def file_exists_static(path):
     return os.path.isfile(full_path)
 
 
+def is_remote_url(value):
+    if not value:
+        return False
+    parsed = urlparse(value)
+    return parsed.scheme in ('http', 'https') and bool(parsed.netloc)
+
+
+def supabase_storage_enabled():
+    return bool(SUPABASE_URL and SUPABASE_STORAGE_KEY and SUPABASE_STORAGE_BUCKET)
+
+
+def is_supabase_storage_url(value):
+    return bool(is_remote_url(value) and SUPABASE_URL and value.startswith(f"{SUPABASE_URL}/storage/v1/object/public/"))
+
+
+def remote_image_exists(url):
+    if not is_remote_url(url):
+        return False
+    if is_supabase_storage_url(url):
+        try:
+            response = requests.head(url, timeout=2)
+            if response.status_code == 404:
+                return False
+        except requests.RequestException:
+            return True
+    return True
+
+
+def supabase_public_url(storage_path):
+    return f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_STORAGE_BUCKET}/{quote(storage_path)}"
+
+
+def upload_to_supabase_storage(file, folder, user_id, extension, max_size=None):
+    if not supabase_storage_enabled():
+        return None
+
+    read_limit = max_size + 1 if max_size else None
+    content = file.read(read_limit)
+    if max_size and len(content) > max_size:
+        raise ValueError('file_too_large')
+
+    storage_path = f"{folder}/user_{user_id}/{uuid.uuid4().hex}.{extension}"
+    upload_url = f"{SUPABASE_URL}/storage/v1/object/{SUPABASE_STORAGE_BUCKET}/{storage_path}"
+    headers = {
+        'apikey': SUPABASE_STORAGE_KEY,
+        'Authorization': f"Bearer {SUPABASE_STORAGE_KEY}",
+        'Content-Type': file.mimetype or 'application/octet-stream',
+        'x-upsert': 'false'
+    }
+    response = requests.post(upload_url, headers=headers, data=content, timeout=30)
+    response.raise_for_status()
+    return supabase_public_url(storage_path)
+
+
 def upload_file_exists(folder, filename):
     if not filename:
         return False
@@ -543,8 +601,25 @@ def gallery_placeholder_response():
     return Response(get_gallery_placeholder_svg(), mimetype='image/svg+xml')
 
 
+def stored_image_is_available(value):
+    if is_remote_url(value):
+        return remote_image_exists(value)
+    return upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], value)
+
+
+def gallery_photo_url(row, endpoint):
+    filename = row_value(row, 'filename')
+    if is_remote_url(filename):
+        return filename
+    return url_for(endpoint, photo_id=row['id'])
+
+
 def get_avatar_url(user):
     avatar = row_value(user, 'avatar')
+    if is_remote_url(avatar):
+        if remote_image_exists(avatar):
+            return avatar
+        return get_default_avatar_url(user)
     if avatar and file_exists_static(os.path.join('avatars', avatar)):
         return url_for('static', filename=f"avatars/{avatar}")
     return get_default_avatar_url(user)
@@ -982,15 +1057,25 @@ def upload_avatar():
     if file:
         original_name = secure_filename(file.filename)
         extension = original_name.rsplit('.', 1)[1].lower()
-        filename = f"user_{session['user_id']}_{uuid.uuid4().hex}.{extension}"
-        
-        file.save(os.path.join(BASE_DIR, app.config['UPLOAD_FOLDER'], filename))
+        avatar_value = None
+
+        try:
+            avatar_value = upload_to_supabase_storage(file, 'avatars', session['user_id'], extension)
+        except requests.RequestException as e:
+            print(f"[storage] Supabase avatar upload failed: {e}")
+            flash('Avatarul va fi salvat temporar local. Verifică setările Supabase Storage.')
+
+        if not avatar_value:
+            file.seek(0)
+            filename = f"user_{session['user_id']}_{uuid.uuid4().hex}.{extension}"
+            file.save(os.path.join(BASE_DIR, app.config['UPLOAD_FOLDER'], filename))
+            avatar_value = filename
 
         db = get_db()
         ensure_column(db, 'users', 'avatar', 'TEXT')
         db.execute(
             "UPDATE users SET avatar = %s WHERE id = %s",
-            (filename, session['user_id'])
+            (avatar_value, session['user_id'])
         )
         db.commit()
         
@@ -1011,6 +1096,11 @@ def gallery_photo(photo_id):
 
     if not photo:
         return redirect(url_for('profile'))
+
+    if is_remote_url(photo['filename']):
+        if remote_image_exists(photo['filename']):
+            return redirect(photo['filename'])
+        return gallery_placeholder_response()
 
     if not upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], photo['filename']):
         return gallery_placeholder_response()
@@ -1035,6 +1125,11 @@ def public_gallery_photo(photo_id):
 
     if not photo:
         return redirect(url_for('friends'))
+
+    if is_remote_url(photo['filename']):
+        if remote_image_exists(photo['filename']):
+            return redirect(photo['filename'])
+        return gallery_placeholder_response()
 
     if not upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], photo['filename']):
         return gallery_placeholder_response()
@@ -1067,20 +1162,41 @@ def upload_gallery_photo():
 
     original_name = secure_filename(file.filename)
     extension = original_name.rsplit('.', 1)[1].lower()
-    filename = f"user_{session['user_id']}_{uuid.uuid4().hex}.{extension}"
-    upload_path = os.path.join(BASE_DIR, app.config['GALLERY_UPLOAD_FOLDER'], filename)
-    file.save(upload_path)
+    photo_value = None
 
-    if os.path.getsize(upload_path) > MAX_GALLERY_PHOTO_SIZE:
-        os.remove(upload_path)
+    try:
+        photo_value = upload_to_supabase_storage(
+            file,
+            'gallery',
+            session['user_id'],
+            extension,
+            max_size=MAX_GALLERY_PHOTO_SIZE
+        )
+    except ValueError:
         flash('Fotografia depășește limita de 5 MB.')
         return redirect(url_for('profile'))
+    except requests.RequestException as e:
+        print(f"[storage] Supabase gallery upload failed: {e}")
+        flash('Fotografia va fi salvată temporar local. Verifică setările Supabase Storage.')
+
+    if not photo_value:
+        file.seek(0)
+        filename = f"user_{session['user_id']}_{uuid.uuid4().hex}.{extension}"
+        upload_path = os.path.join(BASE_DIR, app.config['GALLERY_UPLOAD_FOLDER'], filename)
+        file.save(upload_path)
+
+        if os.path.getsize(upload_path) > MAX_GALLERY_PHOTO_SIZE:
+            os.remove(upload_path)
+            flash('Fotografia depășește limita de 5 MB.')
+            return redirect(url_for('profile'))
+
+        photo_value = filename
 
     db = get_db()
     ensure_user_photos_table(db)
     db.execute(
         'INSERT INTO user_photos (user_id, filename) VALUES (%s, %s)',
-        (session['user_id'], filename)
+        (session['user_id'], photo_value)
     )
     db.commit()
 
@@ -1477,10 +1593,10 @@ def public_user_profile(user_id):
             "id": row['id'],
             "filename": row['filename'],
             "uploaded_at": row['uploaded_at'],
-            "url": url_for('public_gallery_photo', photo_id=row['id'])
+            "url": gallery_photo_url(row, 'public_gallery_photo')
         }
         for row in photo_rows
-        if upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], row['filename'])
+        if stored_image_is_available(row['filename'])
     ]
 
     return render_template(
@@ -1885,10 +2001,10 @@ def profile():
             "id": row['id'],
             "filename": row['filename'],
             "uploaded_at": row['uploaded_at'],
-            "url": url_for('gallery_photo', photo_id=row['id'])
+            "url": gallery_photo_url(row, 'gallery_photo')
         }
         for row in photo_rows
-        if upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], row['filename'])
+        if stored_image_is_available(row['filename'])
     ]
 
     return render_template(

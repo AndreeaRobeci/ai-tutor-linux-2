@@ -6,6 +6,7 @@ AI Tutor Linux este o aplicație Flask pentru învățarea comenzilor Linux prin
 
 - Python + Flask
 - PostgreSQL pe Supabase
+- Supabase Storage pentru avataruri și poze de profil
 - Render pentru deploy
 - Jinja templates
 - HTML, CSS și JavaScript vanilla
@@ -28,8 +29,8 @@ AI Tutor Linux este o aplicație Flask pentru învățarea comenzilor Linux prin
 ├── templates/                     # pagini Jinja
 ├── static/
 │   ├── style.css                  # stiluri aplicație
-│   ├── avatars/                   # avataruri încărcate de utilizatori
-│   └── uploads/                   # fișiere încărcate de utilizatori
+│   ├── avatars/                   # fallback local pentru dezvoltare
+│   └── uploads/                   # fallback local pentru dezvoltare
 ├── tests/                         # teste existente, de actualizat după migrarea PostgreSQL
 └── docs/                          # documentație auxiliară
 ```
@@ -66,6 +67,21 @@ Tabelele principale sunt create automat la pornire dacă nu există:
 - `messages`
 
 Pentru migrarea datelor din SQLite local către Supabase, scriptul `migrate_sqlite_to_postgres.py` poate fi rulat local după setarea `DATABASE_URL`. Scriptul păstrează ID-urile existente și actualizează secvențele PostgreSQL pentru tabelele cu `SERIAL`.
+
+## Supabase Storage
+
+Uploadurile noi pentru avataruri și poze de galerie sunt salvate în Supabase Storage, nu în filesystem-ul Render. Creează un bucket public în Supabase Storage și setează variabilele de mediu:
+
+```text
+SUPABASE_URL=https://PROJECT_ID.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=cheia_service_role
+SUPABASE_ANON_KEY=cheia_anon_optional_daca_nu_folosesti_service_role
+SUPABASE_STORAGE_BUCKET=numele_bucketului
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` este recomandată pe Render pentru upload server-side. Dacă nu este setată, aplicația încearcă `SUPABASE_ANON_KEY`. Bucketul trebuie să permită citirea publică pentru ca URL-urile salvate în baza de date să poată fi afișate în browser.
+
+Pentru date vechi, aplicația încă poate afișa fișiere locale existente din `static/avatars/` și `static/uploads/gallery/`. Dacă un fișier local vechi lipsește după redeploy, avatarul cade pe fallback cu inițiala username-ului, iar pozele lipsă din galerie nu sunt afișate.
 
 ## Rulare locală
 
@@ -109,12 +125,15 @@ Variabile de mediu necesare:
 
 ```text
 DATABASE_URL
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_STORAGE_BUCKET
 ```
 
-Pentru funcții de email și AI, aplicația are nevoie și de configurările corespunzătoare pentru SMTP și Groq API. În versiunea finală, parolele și cheile API trebuie mutate în variabile de mediu, nu păstrate în cod.
+Poți folosi `SUPABASE_ANON_KEY` în loc de `SUPABASE_SERVICE_ROLE_KEY` doar dacă politicile bucketului permit uploadul necesar. Pentru funcții de email și AI, aplicația are nevoie și de configurările corespunzătoare pentru SMTP și Groq API. În versiunea finală, parolele și cheile API trebuie mutate în variabile de mediu, nu păstrate în cod.
 
 ## Note pentru versiunea finală
 
 - `database.db` este doar pentru date locale vechi și nu trebuie folosit în producție.
-- Uploadurile utilizatorilor din `static/avatars/` și `static/uploads/` nu ar trebui versionate în Git.
+- Uploadurile utilizatorilor trebuie persistate în Supabase Storage; folderele `static/avatars/` și `static/uploads/` sunt doar fallback local.
 - Testele existente trebuie actualizate pentru PostgreSQL, deoarece au fost scrise inițial pentru SQLite.
