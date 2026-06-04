@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, g, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, g, send_from_directory, Response
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from groq import Groq
@@ -13,6 +13,7 @@ from psycopg2 import IntegrityError
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from urllib.parse import quote
 
 from datetime import datetime, timedelta
 
@@ -453,11 +454,63 @@ def get_rank_for_xp(xp):
     return "🟣 Script Hacker"
 
 
+def row_value(row, key, default=None):
+    if not row:
+        return default
+    try:
+        if key in row.keys():
+            return row[key]
+    except AttributeError:
+        pass
+    return default
+
+
+def upload_file_exists(folder, filename):
+    if not filename:
+        return False
+    return os.path.isfile(os.path.join(BASE_DIR, folder, filename))
+
+
+def svg_data_url(svg):
+    return f"data:image/svg+xml;charset=utf-8,{quote(svg)}"
+
+
+def get_default_avatar_url(user=None):
+    username = row_value(user, 'username', '') or session.get('username', '')
+    initial = username.strip()[:1].upper() or "U"
+    if not initial.isalnum():
+        initial = "U"
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+<rect width="160" height="160" rx="40" fill="#102a43"/>
+<circle cx="118" cy="36" r="28" fill="#22c55e" opacity=".9"/>
+<text x="50%" y="55%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-size="72" font-weight="700" fill="#f8fafc">{initial}</text>
+</svg>'''
+    return svg_data_url(svg)
+
+
+def get_gallery_placeholder_svg():
+    return '''<svg xmlns="http://www.w3.org/2000/svg" width="640" height="420" viewBox="0 0 640 420">
+<rect width="640" height="420" rx="24" fill="#0f172a"/>
+<rect x="40" y="40" width="560" height="340" rx="20" fill="#1e293b"/>
+<path d="M120 310l120-130 84 88 54-58 142 100H120z" fill="#334155"/>
+<circle cx="445" cy="135" r="42" fill="#64748b"/>
+<text x="320" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#cbd5e1">Imagine indisponibila</text>
+</svg>'''
+
+
+def get_gallery_placeholder_url():
+    return svg_data_url(get_gallery_placeholder_svg())
+
+
+def gallery_placeholder_response():
+    return Response(get_gallery_placeholder_svg(), mimetype='image/svg+xml')
+
+
 def get_avatar_url(user):
-    avatar = user['avatar'] if user and 'avatar' in user.keys() else None
-    if avatar:
-        return f"/static/avatars/{avatar}"
-    return "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    avatar = row_value(user, 'avatar')
+    if upload_file_exists(app.config['UPLOAD_FOLDER'], avatar):
+        return url_for('static', filename=f"avatars/{avatar}")
+    return get_default_avatar_url(user)
 
 
 def are_friends(db, user_id, friend_id):
@@ -902,6 +955,9 @@ def gallery_photo(photo_id):
     if not photo:
         return redirect(url_for('profile'))
 
+    if not upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], photo['filename']):
+        return gallery_placeholder_response()
+
     return send_from_directory(
         os.path.join(BASE_DIR, app.config['GALLERY_UPLOAD_FOLDER']),
         photo['filename']
@@ -922,6 +978,9 @@ def public_gallery_photo(photo_id):
 
     if not photo:
         return redirect(url_for('friends'))
+
+    if not upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], photo['filename']):
+        return gallery_placeholder_response()
 
     return send_from_directory(
         os.path.join(BASE_DIR, app.config['GALLERY_UPLOAD_FOLDER']),
@@ -1028,15 +1087,10 @@ def chat_page():
         record_strike = user_data['record_strike'] if user_data['record_strike'] is not None else 0
         last_date = user_data['last_date'] if user_data['last_date'] is not None else "N/A"
         
-        # Avatarul este acum pe poziția [5]
-        avatar_db = user_data['avatar'] if user_data.get('avatar') else None
-        if avatar_db:
-            avatar_url = f"/static/avatars/{avatar_db}"
-        else:
-            avatar_url = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        avatar_url = get_avatar_url(user_data)
     else:
         # 3. Și aici am actualizat ca să reflecte noile variabile
-        xp, hp, strike_curent, record_strike, last_date, avatar_url = 0, 5, 0, 0, "N/A", "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        xp, hp, strike_curent, record_strike, last_date, avatar_url = 0, 5, 0, 0, "N/A", get_default_avatar_url()
         
     if xp < 50:
         rang = "🟢 Newbie Linux"
@@ -1369,6 +1423,7 @@ def public_user_profile(user_id):
             "url": url_for('public_gallery_photo', photo_id=row['id'])
         }
         for row in photo_rows
+        if upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], row['filename'])
     ]
 
     return render_template(
@@ -1723,7 +1778,7 @@ def profile():
     strike_curent = user['strike_curent'] if user['strike_curent'] is not None else 0
     record_strike = user['record_strike'] if user['record_strike'] is not None else 0
     last_date = user['last_date'] if user['last_date'] is not None else "N/A"
-    avatar_url = f"/static/avatars/{user['avatar']}" if user['avatar'] else "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    avatar_url = get_avatar_url(user)
 
     if xp < 50:
         rang = "🟢 Newbie Linux"
@@ -1776,6 +1831,7 @@ def profile():
             "url": url_for('gallery_photo', photo_id=row['id'])
         }
         for row in photo_rows
+        if upload_file_exists(app.config['GALLERY_UPLOAD_FOLDER'], row['filename'])
     ]
 
     return render_template(
@@ -1818,7 +1874,7 @@ def exercices():
     record_strike = user['record_strike'] if user['record_strike'] is not None else 0
     start_world = user['start_world'] if user['start_world'] is not None else 1
     last_date = user['last_date'] if user['last_date'] is not None else "N/A"
-    avatar_url = f"/static/avatars/{user['avatar']}" if user['avatar'] else "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    avatar_url = get_avatar_url(user)
     cooldown_until = user['cooldown_until']
     cooldown_remaining = active_cooldown_seconds(cooldown_until)
 
