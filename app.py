@@ -400,19 +400,39 @@ def current_user_is_admin():
         'SELECT role FROM users WHERE id = %s',
         (session['user_id'],)
     ).fetchone()
+    if not user:
+        session.clear()
+        return False
     return bool(user and user['role'] == 'admin')
 
 
-def require_admin_access():
+def get_session_user():
     if 'user_id' not in session:
+        return None
+
+    db = get_db()
+    user = db.execute(
+        'SELECT id, username, role FROM users WHERE id = %s',
+        (session['user_id'],)
+    ).fetchone()
+    if not user:
+        session.clear()
+        return None
+
+    return user
+
+
+def require_admin_access():
+    user = get_session_user()
+    if not user:
         return redirect(url_for('login'))
-    if not current_user_is_admin():
+    if user['role'] != 'admin':
         return redirect(url_for('chat_page'))
     return None
 
 
 def require_login_access():
-    if 'user_id' not in session:
+    if not get_session_user():
         return redirect(url_for('login'))
     return None
 
@@ -438,8 +458,11 @@ def are_friends(db, user_id, friend_id):
         return False
 
     friendship = db.execute(
-        'SELECT 1 FROM friendships WHERE user_id = %s AND friend_id = %s',
-        (user_id, friend_id)
+        '''SELECT 1
+           FROM friendships
+           WHERE (user_id = %s AND friend_id = %s)
+           OR (user_id = %s AND friend_id = %s)''',
+        (user_id, friend_id, friend_id, user_id)
     ).fetchone()
     return friendship is not None
 
@@ -1076,17 +1099,18 @@ def friends():
             '''SELECT id, username, avatar, xp, strike_curent, record_strike
                FROM users
                WHERE id != %s
-               AND username LIKE %s
+               AND username ILIKE %s
                ORDER BY username ASC
                LIMIT 12''',
             (user_id, f'%{query}%')
         ).fetchall()
 
     received_requests = db.execute(
-        '''SELECT fr.id, fr.created_at, u.id AS user_id, u.username, u.avatar, u.xp
+        '''SELECT fr.*, u.username, u.email, u.avatar, u.xp
            FROM friend_requests fr
            JOIN users u ON u.id = fr.sender_id
-           WHERE fr.receiver_id = %s AND fr.status = 'pending'
+           WHERE fr.receiver_id = %s
+           AND fr.status = 'pending'
            ORDER BY fr.created_at DESC''',
         (user_id,)
     ).fetchall()
@@ -1103,8 +1127,16 @@ def friends():
            FROM friendships f
            JOIN users u ON u.id = f.friend_id
            WHERE f.user_id = %s
-           ORDER BY u.username ASC''',
-        (user_id,)
+
+           UNION
+
+           SELECT u.id, u.username, u.avatar, u.xp, u.strike_curent, u.record_strike
+           FROM friendships f
+           JOIN users u ON u.id = f.user_id
+           WHERE f.friend_id = %s
+
+           ORDER BY username ASC''',
+        (user_id, user_id)
     ).fetchall()
     friend_ids = {row['id'] for row in friend_rows}
     pending_sent_ids = {row['user_id'] for row in sent_requests}
@@ -1145,6 +1177,11 @@ def send_friend_request(user_id):
     db = get_db()
     ensure_social_tables(db)
     current_user_id = session['user_id']
+    current_user = db.execute('SELECT id FROM users WHERE id = %s', (current_user_id,)).fetchone()
+    if not current_user:
+        session.clear()
+        return redirect(url_for('login'))
+
     if user_id == current_user_id:
         flash('Nu îți poți trimite cerere de prietenie singur.')
         return redirect(url_for('friends'))
@@ -1168,12 +1205,18 @@ def send_friend_request(user_id):
         flash('Există deja o cerere de prietenie în așteptare.')
         return redirect(url_for('friends'))
 
-    db.execute(
-        'INSERT INTO friend_requests (sender_id, receiver_id) VALUES (%s, %s)',
-        (current_user_id, user_id)
-    )
-    db.commit()
-    flash('Cererea de prietenie a fost trimisă.')
+    try:
+        db.execute(
+            '''INSERT INTO friend_requests (sender_id, receiver_id)
+               VALUES (%s, %s)
+               ON CONFLICT DO NOTHING''',
+            (current_user_id, user_id)
+        )
+        db.commit()
+        flash('Cererea de prietenie a fost trimisă.')
+    except IntegrityError:
+        db.rollback()
+        flash('Există deja o cerere de prietenie în așteptare.')
     return redirect(request.referrer or url_for('friends'))
 
 
@@ -1185,27 +1228,31 @@ def accept_friend_request(request_id):
 
     db = get_db()
     ensure_social_tables(db)
-    friend_request = db.execute(
-        '''SELECT id, sender_id, receiver_id
-           FROM friend_requests
-           WHERE id = %s AND receiver_id = %s AND status = 'pending' ''',
-        (request_id, session['user_id'])
-    ).fetchone()
-    if not friend_request:
-        flash('Cererea nu poate fi acceptată.')
-        return redirect(url_for('friends'))
+    try:
+        friend_request = db.execute(
+            '''SELECT id, sender_id, receiver_id
+               FROM friend_requests
+               WHERE id = %s AND receiver_id = %s AND status = 'pending' ''',
+            (request_id, session['user_id'])
+        ).fetchone()
+        if not friend_request:
+            flash('Cererea nu poate fi acceptată.')
+            return redirect(url_for('friends'))
 
-    db.execute("UPDATE friend_requests SET status = 'accepted' WHERE id = %s", (request_id,))
-    db.execute(
-        'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-        (friend_request['receiver_id'], friend_request['sender_id'])
-    )
-    db.execute(
-        'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
-        (friend_request['sender_id'], friend_request['receiver_id'])
-    )
-    db.commit()
-    flash('Cererea de prietenie a fost acceptată.')
+        db.execute(
+            'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+            (friend_request['receiver_id'], friend_request['sender_id'])
+        )
+        db.execute(
+            'INSERT INTO friendships (user_id, friend_id) VALUES (%s, %s) ON CONFLICT DO NOTHING',
+            (friend_request['sender_id'], friend_request['receiver_id'])
+        )
+        db.execute("UPDATE friend_requests SET status = 'accepted' WHERE id = %s", (request_id,))
+        db.commit()
+        flash('Cererea de prietenie a fost acceptată.')
+    except IntegrityError:
+        db.rollback()
+        flash('Cererea nu a putut fi acceptată. Verifică utilizatorii implicați.')
     return redirect(url_for('friends'))
 
 
@@ -1368,9 +1415,11 @@ def leaderboard():
            WHERE id = %s
            OR id IN (
                SELECT friend_id FROM friendships WHERE user_id = %s
+               UNION
+               SELECT user_id FROM friendships WHERE friend_id = %s
            )
            ORDER BY xp DESC, record_strike DESC, strike_curent DESC, username ASC''',
-        (user_id, user_id)
+        (user_id, user_id, user_id)
     ).fetchall()
 
     return render_template(
