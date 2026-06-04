@@ -2597,6 +2597,21 @@ a {
     padding: 28px;
 }
 
+.onboarding-guide {
+    margin-bottom: 26px;
+    padding: 24px;
+}
+
+.onboarding-steps {
+    display: grid;
+    gap: 8px;
+    margin: 16px 0 20px;
+    padding-left: 22px;
+    color: var(--muted);
+    font-weight: 700;
+    line-height: 1.55;
+}
+
 .choice-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2779,6 +2794,471 @@ a {
 .lesson-start-btn:hover {
     transform: translateY(-2px) scale(1.015);
     box-shadow: 0 0 48px -8px rgba(255, 138, 200, 0.96), 0 16px 40px -26px rgba(0, 0, 0, 0.9);
+}
+
+/* Mobile responsiveness pass */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img,
+video,
+canvas,
+svg {
+    max-width: 100%;
+}
+
+.page-title,
+.hero-title,
+.auth-title,
+.section-title,
+.profile-dashboard-title,
+.admin-hero h1,
+.social-chat-header h1 {
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+@media (max-width: 768px) {
+    .page-shell {
+        padding: 18px;
+    }
+
+    .container,
+    .admin-shell {
+        width: min(100%, calc(100% - 24px));
+        padding: 22px 0 48px;
+    }
+
+    .app-topbar {
+        top: 8px;
+        width: calc(100% - 20px);
+        margin-top: 8px;
+        border-radius: 22px;
+        padding: 10px;
+    }
+
+    .topbar-actions {
+        max-width: 100%;
+    }
+
+    .topbar-nav a,
+    .menu-btn,
+    .nav-toggle {
+        min-height: 42px;
+    }
+
+    .card,
+    .auth-panel,
+    .profile-menu,
+    .lesson-modal,
+    .choice-card,
+    .result-card,
+    .admin-hero,
+    .admin-panel,
+    .profile-premium-card {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 18px;
+        padding: 20px;
+    }
+
+    .page-title,
+    .hero-title,
+    .auth-title,
+    .section-title {
+        font-size: clamp(2rem, 8vw, 3.1rem);
+        line-height: 1.05;
+    }
+
+    .admin-hero h1,
+    .profile-dashboard-title {
+        font-size: clamp(2rem, 8vw, 3rem);
+        line-height: 1.06;
+    }
+
+    .landing-wrapper,
+    .chat-hero,
+    .profile-hero-panel,
+    .social-public-profile {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .profile-hero-panel,
+    .profile-hero-identity {
+        align-items: start;
+    }
+
+    .profile-hero-actions,
+    .social-actions,
+    .course-toolbar,
+    .skill-header,
+    .exercise-actions,
+    .boss-actions,
+    .chat-composer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .profile-grid,
+    .profile-detail-grid,
+    .admin-metrics,
+    .social-grid,
+    .social-grid-two,
+    .public-gallery-grid,
+    .course-map {
+        grid-template-columns: 1fr;
+    }
+
+    .leaderboard-row {
+        grid-template-columns: 44px 52px minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .leaderboard-stats {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .social-list-item,
+    .leaderboard-row {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .social-list-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .social-message-row {
+        width: min(92%, 620px);
+        overflow-wrap: anywhere;
+    }
+
+    .social-chat-box {
+        min-height: 320px;
+        max-height: 56vh;
+        padding: 14px;
+    }
+
+    .admin-panel {
+        overflow-x: auto;
+    }
+
+    .admin-panel table,
+    .admin-table {
+        min-width: 720px;
+    }
+
+    .submit-btn,
+    .send-btn,
+    .exercise-submit,
+    .boss-submit,
+    .lesson-start-btn,
+    .lesson-btn,
+    .secondary-btn,
+    .profile-link-btn,
+    .logout-btn,
+    .social-actions button,
+    .social-actions a {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .course-header {
+        margin: 24px 0 16px;
+    }
+
+    .course-header .page-title {
+        max-width: 100%;
+        font-size: clamp(2rem, 9vw, 3.1rem);
+        line-height: 1.05;
+    }
+
+    .status-bar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 8px;
+    }
+
+    .stat-pill {
+        width: 100%;
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 10px;
+        font-size: 0.86rem;
+        text-align: center;
+        white-space: normal;
+    }
+
+    .lume-card {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 18px;
+        padding: 18px;
+    }
+
+    .lume-header {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .titlu-lume {
+        min-width: 0;
+        font-size: clamp(1.25rem, 5.2vw, 1.75rem);
+        line-height: 1.12;
+        overflow-wrap: anywhere;
+    }
+
+    .lume-content {
+        padding-top: 14px;
+    }
+
+    .skill-section {
+        margin-top: 14px;
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .titlu-skill {
+        font-size: 0.95rem;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .exercitiu-item {
+        padding: 14px;
+        border-radius: 15px;
+    }
+
+    .exercise-task {
+        font-size: 0.94rem;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+    }
+
+    .terminal-line {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-shell {
+        padding: 12px;
+    }
+
+    .container,
+    .admin-shell {
+        width: min(100%, calc(100% - 16px));
+        padding: 18px 0 36px;
+    }
+
+    .app-topbar {
+        width: calc(100% - 12px);
+        padding: 8px;
+    }
+
+    .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 12px;
+    }
+
+    .nav-toggle,
+    .menu-btn {
+        min-width: 40px;
+        height: 40px;
+        min-height: 40px;
+        padding: 0 11px;
+    }
+
+    .card,
+    .auth-panel,
+    .lesson-modal,
+    .choice-card,
+    .result-card,
+    .admin-hero,
+    .admin-panel,
+    .profile-premium-card {
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .page-title,
+    .hero-title,
+    .auth-title,
+    .section-title,
+    .admin-hero h1,
+    .profile-dashboard-title,
+    .social-chat-header h1 {
+        font-size: clamp(1.7rem, 9vw, 2.35rem);
+        line-height: 1.08;
+    }
+
+    .eyebrow,
+    .hero-badge,
+    .lesson-badge,
+    .admin-eyebrow {
+        max-width: 100%;
+        padding: 7px 10px;
+        font-size: 0.68rem;
+        line-height: 1.25;
+        white-space: normal;
+    }
+
+    .profile-hero-panel,
+    .profile-hero-identity {
+        gap: 14px;
+    }
+
+    .profile-hero-identity {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-dashboard-avatar,
+    .social-public-profile > img {
+        width: 92px;
+        height: 92px;
+        border-radius: 18px;
+    }
+
+    .leaderboard-row {
+        grid-template-columns: 34px 46px minmax(0, 1fr);
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .leaderboard-row img,
+    .social-list-item img,
+    .social-user-card img,
+    .social-chat-header img {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+    }
+
+    .leaderboard-position {
+        font-size: 1.25rem;
+    }
+
+    .leaderboard-stats span,
+    .social-public-stats span,
+    .social-pill {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .social-message-row {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    .social-chat-header {
+        align-items: flex-start;
+    }
+
+    .social-chat-box {
+        min-height: 280px;
+        padding: 10px;
+    }
+
+    .course-header {
+        margin: 18px 0 12px;
+    }
+
+    .course-header .page-title {
+        font-size: clamp(1.85rem, 10vw, 2.55rem);
+        line-height: 1.08;
+    }
+
+    .course-toolbar {
+        gap: 10px;
+        margin-top: 14px;
+    }
+
+    .status-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-pill {
+        min-height: 36px;
+        padding: 8px 9px;
+        font-size: 0.82rem;
+    }
+
+    .course-map {
+        gap: 14px;
+        margin-top: 18px;
+    }
+
+    .lume-card {
+        border-radius: 16px;
+        padding: 14px;
+    }
+
+    .titlu-lume {
+        font-size: clamp(1.08rem, 5.8vw, 1.38rem);
+        line-height: 1.16;
+    }
+
+    .lume-arrow {
+        font-size: 1rem;
+    }
+
+    .skill-section {
+        padding: 12px;
+    }
+
+    .titlu-skill {
+        font-size: 0.88rem;
+    }
+
+    .lesson-btn {
+        min-height: 40px;
+        padding: 8px 10px;
+        font-size: 0.82rem;
+    }
+
+    .exercitiu-item {
+        margin-bottom: 10px;
+        padding: 12px;
+    }
+
+    .exercise-label {
+        font-size: 0.86rem;
+    }
+
+    .exercise-task {
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+
+    .terminal-line {
+        min-height: 46px;
+        padding: 10px 11px;
+        gap: 7px;
+    }
+
+    .terminal-prompt,
+    .terminal-input {
+        font-size: 0.84rem;
+    }
+
+    .send-btn,
+    .exercise-submit,
+    .boss-submit,
+    .submit-btn,
+    .lesson-start-btn {
+        min-height: 46px;
+        padding: 11px 16px;
+    }
 }
 
 @media (max-width: 1080px) {

@@ -34,7 +34,20 @@
             <p class="muted">Platforma poate porni de la bază sau te poate plasa direct într-un capitol potrivit.</p>
         </section>
 
-        <div class="choice-grid">
+        <section class="glass-panel onboarding-guide">
+            <span class="eyebrow">Ghid rapid</span>
+            <h2 class="section-title">Cum folosești platforma</h2>
+            <ol class="onboarding-steps">
+                <li>Alege nivelul de pornire.</li>
+                <li>Rezolvă exercițiile din hartă.</li>
+                <li>Cere ajutor la Tutor AI când te blochezi.</li>
+                <li>Adaugă prieteni și învață împreună.</li>
+                <li>Urmărește progresul în profil și clasament.</li>
+            </ol>
+            <button class="submit-btn" type="button" onclick="continueOnboarding()">Am înțeles</button>
+        </section>
+
+        <div class="choice-grid" id="level-choice">
             <form action="/set_level_beginner" method="POST">
                 <button class="choice-card" type="submit">
                     <div class="choice-icon">01</div>
@@ -101,6 +114,10 @@
             const testSection = document.getElementById('test-section');
             testSection.style.display = 'block';
             testSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function continueOnboarding() {
+            document.getElementById('level-choice').scrollIntoView({ behavior: 'smooth' });
         }
 
         const navToggle = document.querySelector('[data-nav-toggle]');

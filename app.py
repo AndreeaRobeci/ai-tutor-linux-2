@@ -9,7 +9,6 @@ import threading
 import webbrowser
 import uuid
 import psycopg2
-import psycopg2.errors
 from psycopg2 import IntegrityError
 from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -630,14 +629,22 @@ def login():
                 return redirect_to_onboarding(user['id'], user['username'])
             return redirect(url_for('chat_page'))
         flash('Date incorecte!')
-    return render_template('login.html')
+    return render_template('login.html', auth_mode='login')
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    username = request.form['username']
-    email = request.form['email']
+    if request.method == 'GET':
+        return render_template('login.html', auth_mode='register')
+
+    username = request.form['username'].strip()
+    email = request.form['email'].strip()
     password = request.form['password']
+    confirm_password = request.form.get('confirm_password', '')
+
+    if password != confirm_password:
+        flash('Parolele nu se potrivesc!')
+        return redirect(url_for('login'))
 
     db = get_db()
     try:
@@ -1095,6 +1102,7 @@ def friends():
     search_results = []
 
     if query:
+        search_query = " ".join(query.split())
         search_results = db.execute(
             '''SELECT id, username, avatar, xp, strike_curent, record_strike
                FROM users
@@ -1102,11 +1110,11 @@ def friends():
                AND username ILIKE %s
                ORDER BY username ASC
                LIMIT 12''',
-            (user_id, f'%{query}%')
+            (user_id, f'%{search_query}%')
         ).fetchall()
 
     received_requests = db.execute(
-        '''SELECT fr.*, u.username, u.email, u.avatar, u.xp
+        '''SELECT fr.*, u.id AS user_id, u.username, u.email, u.avatar, u.xp
            FROM friend_requests fr
            JOIN users u ON u.id = fr.sender_id
            WHERE fr.receiver_id = %s
@@ -1217,6 +1225,10 @@ def send_friend_request(user_id):
     except IntegrityError:
         db.rollback()
         flash('Există deja o cerere de prietenie în așteptare.')
+    except Exception as e:
+        db.rollback()
+        print(f"[TEMP DEBUG friends] send_friend_request failed: {e}")
+        flash('Cererea de prietenie nu a putut fi trimisă.')
     return redirect(request.referrer or url_for('friends'))
 
 
@@ -1253,6 +1265,10 @@ def accept_friend_request(request_id):
     except IntegrityError:
         db.rollback()
         flash('Cererea nu a putut fi acceptată. Verifică utilizatorii implicați.')
+    except Exception as e:
+        db.rollback()
+        print(f"[TEMP DEBUG friends] accept_friend_request failed: {e}")
+        flash('Cererea nu a putut fi acceptată.')
     return redirect(url_for('friends'))
 
 

@@ -141,7 +141,7 @@
 
                 <div class="auth-switch">
                     <span id="auth-text">Nu ai cont?</span>
-                    <a id="auth-toggle-text" onclick="toggleAuthMode()">Creează unul aici</a>
+                    <a id="auth-toggle-text" href="/register" onclick="toggleAuthMode(); return false;">Creează unul aici</a>
                 </div>
 
                 {% with messages = get_flashed_messages() %}
@@ -187,7 +187,7 @@
             <div class="footer-column">
                 <strong>Cont</strong>
                 <a href="#cont">Autentificare</a>
-                <a href="#cont">Creează cont</a>
+                <a href="/register">Creează cont</a>
                 <span>Profil</span>
             </div>
         </div>
@@ -200,6 +200,7 @@
 
     <script>
         let isLogin = true;
+        const initialAuthMode = "{{ auth_mode|default('login') }}";
 
         function toggleAuthMode() {
             isLogin = !isLogin;
@@ -269,6 +270,10 @@
                 toggle.setAttribute('aria-label', isVisible ? 'Afișează parola' : 'Ascunde parola');
             });
         });
+
+        if (initialAuthMode === 'register') {
+            toggleAuthMode();
+        }
 
     </script>
 </body>

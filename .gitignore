@@ -1,8 +1,57 @@
-venv/
+# Python cache
 __pycache__/
-*.pyc
-*.gguf
-models/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual env
+venv/
+.venv/
+env/
+
+# Secrets / env
 .env
+.env.*
+!.env.example
+
+# Local databases
+database.db
+*.sqlite
+*.sqlite3
+
+# Logs
 *.log
+
+# Local IDE
 .vscode/
+.idea/
+
+# Local models / heavy artifacts
+models/
+*.gguf
+*.bin
+*.safetensors
+
+# User uploads
+static/avatars/*
+!static/avatars/.gitkeep
+static/uploads/**
+!static/uploads/.gitkeep
+!static/uploads/gallery/
+!static/uploads/gallery/.gitkeep
+
+# Tunnel / demo local files
+public_url.txt
+public_url_qr.png
+cloudflared_quick_tunnel.yml
+requirements-tunnel.txt
+run_tunnel.py
+generate_qr.py
+check_firewall.bat
+start_app.bat
+start_tunnel.bat
+
+# OS files
+.DS_Store
+Thumbs.db
