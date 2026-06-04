@@ -2004,5 +2004,5 @@ def reset_lives():
 
 if __name__ == "__main__":
     init_db()
-    threading.Timer(1.0, open_in_chrome, args=("http://127.0.0.1:5000",)).start()
-    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
