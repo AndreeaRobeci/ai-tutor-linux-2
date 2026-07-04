@@ -49,7 +49,7 @@ app.config['MAIL_DEFAULT_SENDER'] = 'aitutor288@gmail.com'
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
 
-client=Groq(api_key="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")
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 model = None
 model_error = None
 
