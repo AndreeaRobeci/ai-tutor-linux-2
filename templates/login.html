@@ -137,7 +137,7 @@
                     <button type="submit" id="auth-submit" class="auth-btn">Intră în cont</button>
                 </form>
 
-                <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a>
+                <!-- <a href="/forgot_password" id="forgot-pw-link" class="forgot-link">Ai uitat parola?</a> -->
 
                 <div class="auth-switch">
                     <span id="auth-text">Nu ai cont?</span>
@@ -212,7 +212,7 @@
             const confirmPw = document.getElementById('confirm-password');
             const confirmPwField = document.getElementById('confirm-password-field');
             const emailInput = document.getElementById('email-input');
-            const forgotLink = document.getElementById('forgot-pw-link');
+            // const forgotLink = document.getElementById('forgot-pw-link');
             const authText = document.getElementById('auth-text');
             const toggleText = document.getElementById('auth-toggle-text');
 
@@ -224,7 +224,8 @@
 
                 confirmPwField.style.display = "none";
                 emailInput.style.display = "none";
-                forgotLink.style.display = "block";
+                // const forgotLink = document.getElementById('forgot-pw-link');
+                // forgotLink.style.display = "block";
 
                 confirmPw.removeAttribute("required");
                 emailInput.removeAttribute("required");
@@ -239,7 +240,7 @@
 
                 confirmPwField.style.display = "block";
                 emailInput.style.display = "block";
-                forgotLink.style.display = "none";
+                // forgotLink.style.display = "none";
 
                 confirmPw.setAttribute("required", "true");
                 emailInput.setAttribute("required", "true");
