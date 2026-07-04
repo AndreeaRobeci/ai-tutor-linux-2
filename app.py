@@ -38,13 +38,13 @@ ALLOWED_GALLERY_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 MAX_GALLERY_PHOTO_SIZE = 5 * 1024 * 1024
 ALLOWED_AVATAR_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
-# --- CONFIGURARE MAIL (MODIFICĂ AICI!) ---
+
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'aitutor288@gmail.com' # <--- Pune mail-ul nou
-app.config['MAIL_PASSWORD'] = 'ltfk rngw hiwt qkyo'      # <--- Pune codul de 16 litere
-app.config['MAIL_DEFAULT_SENDER'] = 'aitutor288@gmail.com'
+app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_USERNAME")
 
 mail = Mail(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
