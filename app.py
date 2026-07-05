@@ -1067,7 +1067,7 @@ def upload_avatar():
             avatar_value = upload_to_supabase_storage(file, 'avatars', session['user_id'], extension)
         except requests.RequestException as e:
             print(f"[storage] Supabase avatar upload failed: {e}")
-            flash('Avatarul va fi salvat temporar local. Verifică setările Supabase Storage.')
+            
 
         if not avatar_value:
             file.seek(0)
